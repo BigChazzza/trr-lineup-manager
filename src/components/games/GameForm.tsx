@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { gameSchema, type GameFormData, HLL_MAPS, HLL_MODES, HLL_GAME_SIZES, HLL_FACTIONS, MATCH_RESULTS, MATCH_SCORES } from '@/lib/schemas/games'
+import { gameSchema, type GameFormData, HLL_MAPS, HLL_MODES, HLL_GAME_SIZES, HLL_FACTIONS } from '@/lib/schemas/games'
 import { createGame, updateGame } from '@/server-actions/games'
 import { Button } from '@/components/ui/button'
 import {
@@ -80,7 +80,7 @@ export function GameForm({ defaultValues, gameId, playbooks = [] }: GameFormProp
           variant: 'destructive',
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to submit form',
@@ -243,7 +243,7 @@ export function GameForm({ defaultValues, gameId, playbooks = [] }: GameFormProp
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  Which faction you'll be playing as
+                  Which faction you&apos;ll be playing as
                 </FormDescription>
                 <FormMessage />
               </FormItem>

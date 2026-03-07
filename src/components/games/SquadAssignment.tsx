@@ -63,6 +63,16 @@ interface GameDetails {
   faction?: string
 }
 
+interface SendResults {
+  succeeded: number
+  failed: number
+  total: number
+  failedUsers: Array<{
+    username: string
+    error: string
+  }>
+}
+
 interface SquadAssignmentProps {
   gameId: string
   squads: Squad[]
@@ -92,7 +102,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
   const [isSaving, setIsSaving] = useState(false)
   const [isSendingNotifications, setIsSendingNotifications] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-  const [sendResults, setSendResults] = useState<any>(null)
+  const [sendResults, setSendResults] = useState<SendResults | null>(null)
 
   const handleAssign = (signupId: string, squadId: string, roleId: string) => {
     setAssignments(prev => ({

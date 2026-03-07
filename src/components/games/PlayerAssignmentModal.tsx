@@ -30,7 +30,7 @@ export function PlayerAssignmentModal({ squad, role }: PlayerAssignmentModalProp
         <DialogHeader>
           <DialogTitle>Your Assignment</DialogTitle>
           <DialogDescription>
-            Here's your squad assignment and objectives for this game
+            Here&apos;s your squad assignment and objectives for this game
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">

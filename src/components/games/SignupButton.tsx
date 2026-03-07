@@ -40,7 +40,7 @@ export function SignupButton({ gameId, isSignedUp, gameStatus }: SignupButtonPro
           variant: 'destructive',
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to update signup',
