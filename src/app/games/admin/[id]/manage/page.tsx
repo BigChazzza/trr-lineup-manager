@@ -79,7 +79,7 @@ export default async function ManageGamePage({
               <div className="bg-gray-50 border p-4 rounded-lg text-left max-w-2xl mx-auto">
                 <p className="font-semibold text-xs mb-2">Current Signups ({game.signups.length}):</p>
                 <ul className="list-disc list-inside space-y-1">
-                  {game.signups.map((signup) => (
+                  {game.signups.map((signup: { id: string; user: { username: string } }) => (
                     <li key={signup.id} className="text-sm">
                       {signup.user.username}
                     </li>
