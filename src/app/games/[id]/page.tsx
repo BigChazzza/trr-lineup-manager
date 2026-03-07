@@ -46,22 +46,22 @@ export default async function GameDetailPage({
 
   if (userData) {
     currentUserDbId = userData.id
-    isSignedUp = game.signups.some((s) => s.user_id === userData.id)
+    isSignedUp = game.signups.some((s: { user_id: string }) => s.user_id === userData.id)
   }
 
   const sortedSquads = game.playbook?.squads
-    ? [...game.playbook.squads].sort((a, b) => a.squad_order - b.squad_order)
+    ? [...game.playbook.squads].sort((a: { squad_order: number }, b: { squad_order: number }) => a.squad_order - b.squad_order)
     : []
 
   // Check if current user has an assignment
   let userSquad = null
   let userRole = null
   if (currentUserDbId && isSignedUp) {
-    const userSignup = game.signups.find((s) => s.user_id === currentUserDbId)
+    const userSignup = game.signups.find((s: { user_id: string }) => s.user_id === currentUserDbId)
     if (userSignup?.assignment && userSignup.assignment.length > 0) {
       const assignment = userSignup.assignment[0]
-      userSquad = sortedSquads.find((s) => s.id === assignment.squad_id)
-      userRole = userSquad?.squad_roles?.find((r) => r.id === assignment.role_id)
+      userSquad = sortedSquads.find((s: { id: string }) => s.id === assignment.squad_id)
+      userRole = userSquad?.squad_roles?.find((r: { id: string }) => r.id === assignment.role_id)
     }
   }
 
