@@ -68,7 +68,7 @@ export function UsersList({ users }: UsersListProps) {
           variant: 'destructive',
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to update user role',

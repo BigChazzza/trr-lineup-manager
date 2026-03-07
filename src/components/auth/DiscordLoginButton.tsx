@@ -2,15 +2,12 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
 
 export function DiscordLoginButton() {
-  const router = useRouter()
-
   const handleLogin = async () => {
     const supabase = createClient()
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'discord',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
