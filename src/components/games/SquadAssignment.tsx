@@ -192,6 +192,16 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
            (dbAssignment?.squad_id && dbAssignment?.role_id)
   }).length
 
+  // Filter out players who are already assigned
+  const unassignedPlayers = signups.filter(s => {
+    const localAssignment = assignments[s.id]
+    const dbAssignment = s.assignment?.[0]
+
+    // Show only if NOT fully assigned (missing either squad or role in both local and db state)
+    return !(localAssignment?.squadId && localAssignment?.roleId) &&
+           !(dbAssignment?.squad_id && dbAssignment?.role_id)
+  })
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -213,11 +223,11 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
       <div className="grid lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Unassigned Players ({signups.length})</CardTitle>
+            <CardTitle>Unassigned Players ({unassignedPlayers.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {signups.map((signup) => {
+              {unassignedPlayers.map((signup) => {
                 const assignment = assignments[signup.id] || signup.assignment?.[0]
                 // Handle both camelCase (from state) and snake_case (from database)
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
