@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase/server'
 import { isAdmin } from '@/lib/auth/roles'
 import { DiscordLoginButton } from '@/components/auth/DiscordLoginButton'
 import { UserMenu } from '@/components/auth/UserMenu'
-import { Button } from '@/components/ui/button'
 
 export async function Header() {
   const user = await getUser()

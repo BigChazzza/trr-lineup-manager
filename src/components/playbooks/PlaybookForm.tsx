@@ -104,7 +104,7 @@ export function PlaybookForm({ defaultValues, playbookId }: PlaybookFormProps) {
           variant: 'destructive',
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to submit form',

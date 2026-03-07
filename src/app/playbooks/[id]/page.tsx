@@ -107,7 +107,7 @@ export default async function PlaybookDetailPage({
                       <p className="font-semibold text-xs mb-2">Mission Objectives:</p>
                       <ul className="list-disc list-inside space-y-1">
                         {squad.squad_tasks
-                          .sort((a, b) => a.task_order - b.task_order)
+                          .sort((a: { task_order: number }, b: { task_order: number }) => a.task_order - b.task_order)
                           .map((task) => (
                             <li key={task.id} className="text-sm">
                               {task.task_description}
