@@ -123,7 +123,7 @@ export default async function Home() {
               <Card>
                 <CardHeader>
                   <CardTitle>My Signups</CardTitle>
-                  <CardDescription>Games you've signed up for</CardDescription>
+                  <CardDescription>Games you&apos;ve signed up for</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {mySignups.length > 0 ? (
@@ -142,7 +142,7 @@ export default async function Home() {
                   ) : (
                     <div className="text-center py-8">
                       <p className="text-muted-foreground mb-4">
-                        You haven't signed up for any games yet.
+                        You haven&apos;t signed up for any games yet.
                       </p>
                       <Link href="/games">
                         <Button>Browse Games</Button>
