@@ -252,7 +252,7 @@ export default async function GameDetailPage({
               <CardContent>
                 {game.signups.length > 0 ? (
                   <div className="space-y-3">
-                    {game.signups.map((signup) => (
+                    {game.signups.map((signup: { id: string; user: { username: string; avatar_url: string | null }; signed_up_at: string }) => (
                       <div key={signup.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                         <Avatar className="h-10 w-10 ring-1 ring-gray-300">
                           <AvatarImage
