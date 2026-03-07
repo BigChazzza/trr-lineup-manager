@@ -41,14 +41,17 @@ export async function sendDiscordDM(
 
     // Extract useful error message from Discord API response
     let errorMessage = 'Unknown error'
-    if (error.code === 50007) {
-      errorMessage = 'Cannot send messages to this user (DMs disabled or bot blocked)'
-    } else if (error.code === 10013) {
-      errorMessage = 'Unknown user (invalid Discord ID)'
-    } else if (error.rawError?.message) {
-      errorMessage = error.rawError.message
-    } else if (error.message) {
-      errorMessage = error.message
+    if (typeof error === 'object' && error !== null) {
+      const err = error as { code?: number; rawError?: { message?: string }; message?: string }
+      if (err.code === 50007) {
+        errorMessage = 'Cannot send messages to this user (DMs disabled or bot blocked)'
+      } else if (err.code === 10013) {
+        errorMessage = 'Unknown user (invalid Discord ID)'
+      } else if (err.rawError?.message) {
+        errorMessage = err.rawError.message
+      } else if (err.message) {
+        errorMessage = err.message
+      }
     }
 
     return { success: false, error: errorMessage }

@@ -17,14 +17,14 @@ export const squadSchema = z.object({
   name: z.string().min(1, 'Squad name is required').max(100),
   squad_order: z.number().int().min(0),
   roles: z.array(squadRoleSchema).min(1, 'At least one role is required per squad'),
-  tasks: z.array(squadTaskSchema).default([]),
+  tasks: z.array(squadTaskSchema),
 })
 
 // Main playbook schema for form validation
 export const playbookSchema = z.object({
   name: z.string().min(1, 'Playbook name is required').max(100),
   description: z.string().max(500).optional(),
-  is_default: z.boolean().default(false),
+  is_default: z.boolean(),
   google_doc_link: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   squads: z.array(squadSchema).min(1, 'At least one squad is required'),
 })
