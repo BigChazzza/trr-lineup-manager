@@ -44,7 +44,7 @@ export async function createGame(formData: GameFormData) {
 
     if (error) {
       console.error('Error creating game:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
     }
 
     revalidatePath('/games')
@@ -53,7 +53,7 @@ export async function createGame(formData: GameFormData) {
     return { success: true, data }
   } catch (error: unknown) {
     console.error('Error in createGame:', error)
-    return { success: false, error: error.message || 'Failed to create game' }
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to create game' }
   }
 }
 
@@ -76,7 +76,7 @@ export async function updateGame(id: string, formData: GameFormData) {
 
     if (error) {
       console.error('Error updating game:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
     }
 
     revalidatePath('/games')
@@ -86,7 +86,7 @@ export async function updateGame(id: string, formData: GameFormData) {
     return { success: true, data }
   } catch (error: unknown) {
     console.error('Error in updateGame:', error)
-    return { success: false, error: error.message || 'Failed to update game' }
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to update game' }
   }
 }
 
@@ -103,7 +103,7 @@ export async function deleteGame(id: string) {
 
     if (error) {
       console.error('Error deleting game:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
     }
 
     revalidatePath('/games')
@@ -112,7 +112,7 @@ export async function deleteGame(id: string) {
     return { success: true }
   } catch (error: unknown) {
     console.error('Error in deleteGame:', error)
-    return { success: false, error: error.message || 'Failed to delete game' }
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to delete game' }
   }
 }
 
@@ -214,6 +214,6 @@ export async function saveGameAssignments(
     return { success: true, data: { updated, created, deleted } }
   } catch (error: unknown) {
     console.error('Error in saveGameAssignments:', error)
-    return { success: false, error: error.message || 'Failed to save assignments' }
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to save assignments' }
   }
 }

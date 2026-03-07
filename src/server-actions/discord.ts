@@ -114,8 +114,10 @@ export async function sendRoleNotifications(gameId: string) {
       const assignment = signup.assignment
 
       // Find the squad and role details from the playbook
-      const squad = game.playbook.squads.find((s) => s.id === assignment.squad_id)
-      const role = squad?.squad_roles.find((r) => r.id === assignment.role_id)
+      // Handle both array and object returns from Supabase
+      const playbook = Array.isArray(game.playbook) ? game.playbook[0] : game.playbook
+      const squad = playbook?.squads.find((s: { id: string }) => s.id === assignment.squad_id)
+      const role = squad?.squad_roles.find((r: { id: string }) => r.id === assignment.role_id)
 
       if (!squad || !role) {
         results.push({
@@ -181,6 +183,6 @@ Good luck on the battlefield! 🪖
     }
   } catch (error: unknown) {
     console.error('Error in sendRoleNotifications:', error)
-    return { success: false, error: error.message || 'Failed to send notifications' }
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to send notifications' }
   }
 }

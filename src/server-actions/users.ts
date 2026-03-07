@@ -52,6 +52,6 @@ export async function updateUserRole(
     return { success: true }
   } catch (error: unknown) {
     console.error('Error in updateUserRole:', error)
-    return { success: false, error: error.message || 'Failed to update user role' }
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to update user role' }
   }
 }

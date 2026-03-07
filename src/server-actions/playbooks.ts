@@ -126,7 +126,7 @@ export async function createPlaybook(formData: PlaybookFormData) {
     return { success: true, data: playbook }
   } catch (error: unknown) {
     console.error('Error in createPlaybook:', error)
-    return { success: false, error: error.message || 'Failed to create playbook' }
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to create playbook' }
   }
 }
 
@@ -251,7 +251,7 @@ export async function updatePlaybook(playbookId: string, formData: PlaybookFormD
     return { success: true, data: playbook }
   } catch (error: unknown) {
     console.error('Error in updatePlaybook:', error)
-    return { success: false, error: error.message || 'Failed to update playbook' }
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to update playbook' }
   }
 }
 
@@ -268,7 +268,7 @@ export async function deletePlaybook(id: string) {
 
     if (error) {
       console.error('Error deleting playbook:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
     }
 
     revalidatePath('/playbooks')
@@ -277,6 +277,6 @@ export async function deletePlaybook(id: string) {
     return { success: true }
   } catch (error: unknown) {
     console.error('Error in deletePlaybook:', error)
-    return { success: false, error: error.message || 'Failed to delete playbook' }
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to delete playbook' }
   }
 }
