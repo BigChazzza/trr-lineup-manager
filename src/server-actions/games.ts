@@ -51,7 +51,7 @@ export async function createGame(formData: GameFormData) {
     revalidatePath('/')
 
     return { success: true, data }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in createGame:', error)
     return { success: false, error: error.message || 'Failed to create game' }
   }
@@ -84,7 +84,7 @@ export async function updateGame(id: string, formData: GameFormData) {
     revalidatePath('/')
 
     return { success: true, data }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in updateGame:', error)
     return { success: false, error: error.message || 'Failed to update game' }
   }
@@ -110,7 +110,7 @@ export async function deleteGame(id: string) {
     revalidatePath('/')
 
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in deleteGame:', error)
     return { success: false, error: error.message || 'Failed to delete game' }
   }
@@ -212,7 +212,7 @@ export async function saveGameAssignments(
     revalidatePath(`/games/${gameId}`)
 
     return { success: true, data: { updated, created, deleted } }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in saveGameAssignments:', error)
     return { success: false, error: error.message || 'Failed to save assignments' }
   }

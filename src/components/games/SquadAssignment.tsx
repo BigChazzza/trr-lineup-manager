@@ -129,7 +129,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
           variant: 'destructive',
         })
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: error.message || 'An unexpected error occurred',
@@ -160,7 +160,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
           variant: 'destructive',
         })
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: error.message || 'Failed to send notifications',
@@ -446,7 +446,7 @@ Good luck on the battlefield! 🪖`
                   ❌ Failed to send to {sendResults.failed} player(s):
                 </p>
                 <ul className="text-sm text-red-800 space-y-1">
-                  {sendResults.failedUsers.map((user: any, i: number) => (
+                  {sendResults.failedUsers.map((user, i) => (
                     <li key={i}>
                       • {user.username}: {user.error}
                     </li>

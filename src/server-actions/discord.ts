@@ -90,8 +90,8 @@ export async function sendRoleNotifications(gameId: string) {
     }
 
     // Match assignments to signups
-    const signupsWithAssignments = signups.map((signup: any) => {
-      const assignment = assignments?.find((a: any) => a.signup_id === signup.id)
+    const signupsWithAssignments = signups.map((signup) => {
+      const assignment = assignments?.find((a) => a.signup_id === signup.id)
       return {
         ...signup,
         assignment: assignment || null
@@ -99,7 +99,7 @@ export async function sendRoleNotifications(gameId: string) {
     })
 
     // Filter only assigned players
-    const assignedPlayers = signupsWithAssignments.filter((s: any) => s.assignment !== null)
+    const assignedPlayers = signupsWithAssignments.filter((s) => s.assignment !== null)
 
     if (assignedPlayers.length === 0) {
       return { success: false, error: 'No players have been assigned yet. Assign players to squads before sending notifications.' }
@@ -114,8 +114,8 @@ export async function sendRoleNotifications(gameId: string) {
       const assignment = signup.assignment
 
       // Find the squad and role details from the playbook
-      const squad = game.playbook.squads.find((s: any) => s.id === assignment.squad_id)
-      const role = squad?.squad_roles.find((r: any) => r.id === assignment.role_id)
+      const squad = game.playbook.squads.find((s) => s.id === assignment.squad_id)
+      const role = squad?.squad_roles.find((r) => r.id === assignment.role_id)
 
       if (!squad || !role) {
         results.push({
@@ -128,8 +128,8 @@ export async function sendRoleNotifications(gameId: string) {
 
       // Format tasks
       const tasks = squad.squad_tasks
-        .sort((a: any, b: any) => a.task_order - b.task_order)
-        .map((t: any, i: number) => `${i + 1}. ${t.task_description}`)
+        .sort((a, b) => a.task_order - b.task_order)
+        .map((t, i) => `${i + 1}. ${t.task_description}`)
         .join('\n')
 
       // Format game details
@@ -179,7 +179,7 @@ Good luck on the battlefield! 🪖
         failedUsers: failedUsers.map(u => ({ username: u.username, error: u.error }))
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in sendRoleNotifications:', error)
     return { success: false, error: error.message || 'Failed to send notifications' }
   }

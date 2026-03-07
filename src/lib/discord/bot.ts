@@ -25,9 +25,9 @@ export async function sendDiscordDM(
     const rest = getDiscordREST()
 
     // Create DM channel with user
-    const dmChannel: any = await rest.post(Routes.userChannels(), {
+    const dmChannel = await rest.post(Routes.userChannels(), {
       body: { recipient_id: discordId }
-    })
+    }) as { id: string }
 
     // Send message to DM channel
     await rest.post(Routes.channelMessages(dmChannel.id), {
@@ -35,7 +35,7 @@ export async function sendDiscordDM(
     })
 
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Common errors: User has DMs disabled, bot blocked by user, invalid Discord ID
     console.error('Discord DM send error:', error)
 

@@ -52,7 +52,7 @@ export default async function UsersAdminPage() {
             </CardHeader>
             <CardContent>
               <p className="text-4xl font-bold text-gray-900">
-                {users?.filter((u: any) => u.discord_roles?.includes('Tactician')).length || 0}
+                {users?.filter((u) => u.discord_roles?.includes('Tactician')).length || 0}
               </p>
             </CardContent>
           </Card>
@@ -63,7 +63,7 @@ export default async function UsersAdminPage() {
             </CardHeader>
             <CardContent>
               <p className="text-4xl font-bold text-gray-900">
-                {users?.filter((u: any) => u.discord_roles?.includes('Admin')).length || 0}
+                {users?.filter((u) => u.discord_roles?.includes('Admin')).length || 0}
               </p>
             </CardContent>
           </Card>

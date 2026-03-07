@@ -124,7 +124,7 @@ export async function createPlaybook(formData: PlaybookFormData) {
     revalidatePath('/')
 
     return { success: true, data: playbook }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in createPlaybook:', error)
     return { success: false, error: error.message || 'Failed to create playbook' }
   }
@@ -249,7 +249,7 @@ export async function updatePlaybook(playbookId: string, formData: PlaybookFormD
     revalidatePath('/')
 
     return { success: true, data: playbook }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in updatePlaybook:', error)
     return { success: false, error: error.message || 'Failed to update playbook' }
   }
@@ -275,7 +275,7 @@ export async function deletePlaybook(id: string) {
     revalidatePath('/')
 
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in deletePlaybook:', error)
     return { success: false, error: error.message || 'Failed to delete playbook' }
   }

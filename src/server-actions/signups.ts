@@ -56,7 +56,7 @@ export async function signUpForGame(gameId: string) {
     revalidatePath('/')
 
     return { success: true, data }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in signUpForGame:', error)
     return { success: false, error: error.message || 'Failed to sign up' }
   }
@@ -99,7 +99,7 @@ export async function removeSignup(gameId: string) {
     revalidatePath('/')
 
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in removeSignup:', error)
     return { success: false, error: error.message || 'Failed to remove signup' }
   }

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useForm, useFieldArray, type UseFormReturn } from 'react-hook-form'
 import { playbookSchema, type PlaybookFormData } from '@/lib/schemas/playbooks'
 import { createPlaybook, updatePlaybook } from '@/server-actions/playbooks'
 import { PLAYBOOK_TEMPLATES, type TemplateName } from '@/lib/playbook-templates'
@@ -288,7 +288,7 @@ export function PlaybookForm({ defaultValues, playbookId }: PlaybookFormProps) {
 
 interface SquadCardProps {
   squadIndex: number
-  form: any
+  form: UseFormReturn<PlaybookFormData>
   onRemove: () => void
   onMoveUp: () => void
   onMoveDown: () => void

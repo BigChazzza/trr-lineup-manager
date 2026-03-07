@@ -5,13 +5,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import type { Database } from '@/lib/types'
+
+type Game = Database['public']['Tables']['games']['Row']
+type Signup = Database['public']['Tables']['signups']['Row'] & {
+  games: Game
+}
 
 export default async function Home() {
   const user = await getUser()
   const userIsAdmin = user ? await isAdmin() : false
 
-  let upcomingGames = []
-  let mySignups = []
+  let upcomingGames: Game[] = []
+  let mySignups: Signup[] = []
 
   if (user) {
     const supabase = await createClient()
@@ -87,7 +93,7 @@ export default async function Home() {
                 <CardContent>
                   {upcomingGames.length > 0 ? (
                     <div className="space-y-4">
-                      {upcomingGames.map((game: any) => (
+                      {upcomingGames.map((game) => (
                         <Link key={game.id} href={`/games/${game.id}`}>
                           <div className="p-4 border rounded-lg bg-white hover:bg-gray-50 hover:border-gray-300 transition-all">
                             <h3 className="font-semibold">{game.name}</h3>
@@ -122,7 +128,7 @@ export default async function Home() {
                 <CardContent>
                   {mySignups.length > 0 ? (
                     <div className="space-y-4">
-                      {mySignups.map((signup: any) => (
+                      {mySignups.map((signup) => (
                         <Link key={signup.id} href={`/games/${signup.game_id}`}>
                           <div className="p-4 border rounded-lg bg-white hover:bg-gray-50 hover:border-gray-300 transition-all">
                             <h3 className="font-semibold">{signup.games.name}</h3>

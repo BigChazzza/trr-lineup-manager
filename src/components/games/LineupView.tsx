@@ -40,7 +40,7 @@ interface LineupViewProps {
 
 export function LineupView({ squads, signups, currentUserId }: LineupViewProps) {
   // Create a map of assignments
-  const assignmentMap = new Map<string, { squadId: string; roleId: string; user: any }>()
+  const assignmentMap = new Map<string, { squadId: string; roleId: string; user: Signup['user'] }>()
 
   signups.forEach((signup) => {
     if (signup.assignment && signup.assignment.length > 0) {

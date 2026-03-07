@@ -50,7 +50,7 @@ export async function updateUserRole(
     revalidatePath('/admin/dashboard')
 
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in updateUserRole:', error)
     return { success: false, error: error.message || 'Failed to update user role' }
   }

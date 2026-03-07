@@ -46,22 +46,22 @@ export default async function GameDetailPage({
 
   if (userData) {
     currentUserDbId = userData.id
-    isSignedUp = game.signups.some((s: any) => s.user_id === userData.id)
+    isSignedUp = game.signups.some((s) => s.user_id === userData.id)
   }
 
   const sortedSquads = game.playbook?.squads
-    ? [...game.playbook.squads].sort((a: any, b: any) => a.squad_order - b.squad_order)
+    ? [...game.playbook.squads].sort((a, b) => a.squad_order - b.squad_order)
     : []
 
   // Check if current user has an assignment
   let userSquad = null
   let userRole = null
   if (currentUserDbId && isSignedUp) {
-    const userSignup = game.signups.find((s: any) => s.user_id === currentUserDbId)
+    const userSignup = game.signups.find((s) => s.user_id === currentUserDbId)
     if (userSignup?.assignment && userSignup.assignment.length > 0) {
       const assignment = userSignup.assignment[0]
-      userSquad = sortedSquads.find((s: any) => s.id === assignment.squad_id)
-      userRole = userSquad?.squad_roles?.find((r: any) => r.id === assignment.role_id)
+      userSquad = sortedSquads.find((s) => s.id === assignment.squad_id)
+      userRole = userSquad?.squad_roles?.find((r) => r.id === assignment.role_id)
     }
   }
 
@@ -252,7 +252,7 @@ export default async function GameDetailPage({
               <CardContent>
                 {game.signups.length > 0 ? (
                   <div className="space-y-3">
-                    {game.signups.map((signup: any) => (
+                    {game.signups.map((signup) => (
                       <div key={signup.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                         <Avatar className="h-10 w-10 ring-1 ring-gray-300">
                           <AvatarImage

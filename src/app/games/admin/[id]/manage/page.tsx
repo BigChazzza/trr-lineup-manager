@@ -28,8 +28,8 @@ export default async function ManageGamePage({
 
   const sortedSquads = game.playbook?.squads
     ? [...game.playbook.squads]
-        .sort((a: any, b: any) => a.squad_order - b.squad_order)
-        .map((squad: any) => ({
+        .sort((a, b) => a.squad_order - b.squad_order)
+        .map((squad) => ({
           ...squad,
           squad_tasks: squad.squad_tasks || []
         }))
@@ -79,7 +79,7 @@ export default async function ManageGamePage({
               <div className="bg-gray-50 border p-4 rounded-lg text-left max-w-2xl mx-auto">
                 <p className="font-semibold text-xs mb-2">Current Signups ({game.signups.length}):</p>
                 <ul className="list-disc list-inside space-y-1">
-                  {game.signups.map((signup: any) => (
+                  {game.signups.map((signup) => (
                     <li key={signup.id} className="text-sm">
                       {signup.user.username}
                     </li>

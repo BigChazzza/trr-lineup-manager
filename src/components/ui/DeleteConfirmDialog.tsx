@@ -64,7 +64,7 @@ export function DeleteConfirmDialog({
           variant: 'destructive',
         })
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: error.message || 'An unexpected error occurred',

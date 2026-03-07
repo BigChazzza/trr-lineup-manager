@@ -42,7 +42,7 @@ export default async function PlaybooksPage() {
 
         {playbooks && playbooks.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {playbooks.map((playbook: any) => (
+            {playbooks.map((playbook) => (
               <Link key={playbook.id} href={`/playbooks/${playbook.id}`}>
                 <Card className="hover:shadow-md hover:border-gray-300 transition-all cursor-pointer h-full">
                   <CardHeader>

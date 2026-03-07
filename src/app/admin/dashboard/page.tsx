@@ -118,7 +118,7 @@ export default async function AdminDashboardPage() {
             <CardContent>
               {recentGames && recentGames.length > 0 ? (
                 <div className="space-y-3">
-                  {recentGames.map((game: any) => (
+                  {recentGames.map((game) => (
                     <Link key={game.id} href={`/games/${game.id}`}>
                       <div className="p-3 border rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors">
                         <div className="flex items-start justify-between">
