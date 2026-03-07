@@ -108,7 +108,7 @@ export default async function PlaybookDetailPage({
                       <ul className="list-disc list-inside space-y-1">
                         {squad.squad_tasks
                           .sort((a: { task_order: number }, b: { task_order: number }) => a.task_order - b.task_order)
-                          .map((task) => (
+                          .map((task: { id: string; task_description: string }) => (
                             <li key={task.id} className="text-sm">
                               {task.task_description}
                             </li>
@@ -123,8 +123,8 @@ export default async function PlaybookDetailPage({
                   <p className="font-semibold text-xs mb-3">Roles:</p>
                   <div className="flex flex-wrap gap-2">
                     {squad.squad_roles
-                      .sort((a, b) => a.role_order - b.role_order)
-                      .map((role) => (
+                      .sort((a: { role_order: number }, b: { role_order: number }) => a.role_order - b.role_order)
+                      .map((role: { id: string; role_name: string }) => (
                         <Badge key={role.id} variant="secondary">
                           {role.role_name}
                         </Badge>

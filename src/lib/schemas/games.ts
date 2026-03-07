@@ -10,7 +10,7 @@ export const gameSchema = z.object({
   faction: z.string().optional(),
   strat_maps_link: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   playbook_id: z.string().uuid().optional().nullable(),
-  status: z.enum(['draft', 'open', 'closed', 'completed']).default('open'),
+  status: z.enum(['draft', 'open', 'closed', 'completed']),
   match_result: z.enum(['axis_victory', 'allies_victory', 'draw']).optional(),
   match_score: z.enum(['5-0', '4-1', '3-2']).optional(),
   winning_clan: z.string().max(50, 'Clan name must be 50 characters or less').optional().or(z.literal('')),

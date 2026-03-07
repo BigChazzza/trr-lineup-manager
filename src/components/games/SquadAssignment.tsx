@@ -69,7 +69,7 @@ interface SendResults {
   total: number
   failedUsers: Array<{
     username: string
-    error: string
+    error?: string
   }>
 }
 
@@ -116,7 +116,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
     try {
       const result = await saveGameAssignments(gameId, assignments)
 
-      if (result.success) {
+      if (result.success && result.data) {
         const { updated, created, deleted } = result.data
         const total = updated + created + deleted
 
@@ -142,7 +142,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
     } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: error.message || 'An unexpected error occurred',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred',
         variant: 'destructive',
       })
     } finally {
@@ -173,7 +173,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
     } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to send notifications',
+        description: error instanceof Error ? error.message : 'Failed to send notifications',
         variant: 'destructive',
       })
     } finally {
@@ -219,8 +219,13 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
             <div className="space-y-3">
               {signups.map((signup) => {
                 const assignment = assignments[signup.id] || signup.assignment?.[0]
-                const assignedSquad = sortedSquads.find(s => s.id === assignment?.squad_id)
-                const assignedRole = assignedSquad?.squad_roles.find(r => r.id === assignment?.role_id)
+                // Handle both camelCase (from state) and snake_case (from database)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const squadId = (assignment as any)?.squadId ?? (assignment as any)?.squad_id
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const roleId = (assignment as any)?.roleId ?? (assignment as any)?.role_id
+                const assignedSquad = sortedSquads.find(s => s.id === squadId)
+                const assignedRole = assignedSquad?.squad_roles.find(r => r.id === roleId)
 
                 return (
                   <div key={signup.id} className="p-3 border bg-white rounded-lg">
@@ -384,8 +389,10 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
                 }
 
                 const assignment = assignments[firstAssigned.id] || firstAssigned.assignment?.[0]
-                const squad = sortedSquads.find(s => s.id === (assignment?.squadId || assignment?.squad_id))
-                const role = squad?.squad_roles.find(r => r.id === (assignment?.roleId || assignment?.role_id))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const squad = sortedSquads.find(s => s.id === ((assignment as any)?.squadId ?? (assignment as any)?.squad_id))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const role = squad?.squad_roles.find(r => r.id === ((assignment as any)?.roleId ?? (assignment as any)?.role_id))
 
                 const gameDetails = [
                   game.map && `Map: ${game.map}`,
@@ -443,14 +450,14 @@ Good luck on the battlefield! 🪖`
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {sendResults?.succeeded > 0 && (
+            {sendResults?.succeeded && sendResults.succeeded > 0 && (
               <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
                 <p className="font-semibold text-green-900 text-sm mb-1">
                   ✅ Successfully sent to {sendResults.succeeded} player(s)
                 </p>
               </div>
             )}
-            {sendResults?.failed > 0 && (
+            {sendResults?.failed && sendResults.failed > 0 && (
               <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
                 <p className="font-semibold text-red-900 text-sm mb-2">
                   ❌ Failed to send to {sendResults.failed} player(s):

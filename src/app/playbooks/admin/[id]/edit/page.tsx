@@ -47,19 +47,19 @@ export default async function EditPlaybookPage({
     is_default: playbook.is_default,
     google_doc_link: playbook.google_doc_link || '',
     squads: playbook.squads
-      .sort((a, b) => a.squad_order - b.squad_order)
-      .map((squad) => ({
+      .sort((a: { squad_order: number }, b: { squad_order: number }) => a.squad_order - b.squad_order)
+      .map((squad: { name: string; squad_order: number; squad_roles: Array<{ role_name: string; role_order: number }>; squad_tasks: Array<{ task_description: string; task_order: number }> }) => ({
         name: squad.name,
         squad_order: squad.squad_order,
         roles: squad.squad_roles
-          .sort((a, b) => a.role_order - b.role_order)
-          .map((role) => ({
+          .sort((a: { role_order: number }, b: { role_order: number }) => a.role_order - b.role_order)
+          .map((role: { role_name: string; role_order: number }) => ({
             role_name: role.role_name,
             role_order: role.role_order,
           })),
         tasks: squad.squad_tasks
-          .sort((a, b) => a.task_order - b.task_order)
-          .map((task) => ({
+          .sort((a: { task_order: number }, b: { task_order: number }) => a.task_order - b.task_order)
+          .map((task: { task_description: string; task_order: number }) => ({
             task_description: task.task_description,
             task_order: task.task_order,
           })),
