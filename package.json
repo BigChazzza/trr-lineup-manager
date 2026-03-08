@@ -35,6 +35,7 @@
     "react-hook-form": "^7.71.2",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.21.0",
     "utf-8-validate": "^6.0.6",
     "zlib-sync": "^0.1.10",
     "zod": "^4.3.6"
