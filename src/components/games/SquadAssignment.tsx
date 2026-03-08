@@ -192,15 +192,14 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
            (dbAssignment?.squad_id && dbAssignment?.role_id)
   }).length
 
-  // Filter out players who are already assigned
-  const unassignedPlayers = signups.filter(s => {
+  const unassignedCount = signups.filter(s => {
     const localAssignment = assignments[s.id]
     const dbAssignment = s.assignment?.[0]
 
-    // Show only if NOT fully assigned (missing either squad or role in both local and db state)
+    // Count as unassigned if NOT fully assigned
     return !(localAssignment?.squadId && localAssignment?.roleId) &&
            !(dbAssignment?.squad_id && dbAssignment?.role_id)
-  })
+  }).length
 
   return (
     <div className="space-y-6">
@@ -223,11 +222,13 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
       <div className="grid lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Unassigned Players ({unassignedPlayers.length})</CardTitle>
+            <CardTitle>
+              All Players ({assignedCount} assigned, {unassignedCount} unassigned)
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {unassignedPlayers.map((signup) => {
+              {signups.map((signup) => {
                 const assignment = assignments[signup.id] || signup.assignment?.[0]
                 // Handle both camelCase (from state) and snake_case (from database)
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -237,8 +238,10 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
                 const assignedSquad = sortedSquads.find(s => s.id === squadId)
                 const assignedRole = assignedSquad?.squad_roles.find(r => r.id === roleId)
 
+                const isAssigned = squadId && roleId
+
                 return (
-                  <div key={signup.id} className="p-3 border bg-white rounded-lg">
+                  <div key={signup.id} className={`p-3 border rounded-lg ${isAssigned ? 'bg-green-50 border-green-200' : 'bg-white'}`}>
                     <div className="flex items-center gap-3 mb-3">
                       <Avatar className="h-10 w-10 ring-1 ring-gray-300">
                         <AvatarImage
@@ -250,7 +253,14 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <p className="font-medium">{signup.user.username}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{signup.user.username}</p>
+                          {isAssigned && (
+                            <Badge variant="secondary" className="text-xs bg-green-600 text-white">
+                              Assigned
+                            </Badge>
+                          )}
+                        </div>
                         {assignedSquad && assignedRole && (
                           <p className="text-xs text-muted-foreground">
                             {assignedSquad.name} - {assignedRole.role_name}
@@ -319,7 +329,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
                             })
                           }}
                         >
-                          Clear
+                          Unassign
                         </Button>
                       )}
                     </div>
