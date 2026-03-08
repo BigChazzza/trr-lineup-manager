@@ -107,6 +107,11 @@ export default async function AdminDashboardPage() {
                   Manage Users
                 </Button>
               </Link>
+              <Link href="/admin/bot-config" className="block">
+                <Button variant="outline" className="w-full">
+                  Configure Discord Bot
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 

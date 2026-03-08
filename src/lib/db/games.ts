@@ -39,6 +39,7 @@ export async function getGameById(id: string) {
         id,
         user_id,
         signed_up_at,
+        role_preference,
         user:users!signups_user_id_fkey(id, username, avatar_url),
         assignment:game_assignments(squad_id, role_id)
       )

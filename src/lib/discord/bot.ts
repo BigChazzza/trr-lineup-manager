@@ -57,3 +57,98 @@ export async function sendDiscordDM(
     return { success: false, error: errorMessage }
   }
 }
+
+/**
+ * Creates a text channel in a Discord guild under a specific category
+ */
+export async function createDiscordChannel(
+  guildId: string,
+  categoryId: string,
+  channelName: string
+): Promise<{ success: boolean; channelId?: string; error?: string }> {
+  try {
+    const rest = getDiscordREST()
+
+    const channel = await rest.post(Routes.guildChannels(guildId), {
+      body: {
+        name: channelName,
+        type: 0, // 0 = GUILD_TEXT
+        parent_id: categoryId,
+      }
+    }) as { id: string }
+
+    return { success: true, channelId: channel.id }
+  } catch (error: unknown) {
+    console.error('Discord channel creation error:', error)
+
+    let errorMessage = 'Unknown error'
+    if (typeof error === 'object' && error !== null) {
+      const err = error as { message?: string }
+      if (err.message) {
+        errorMessage = err.message
+      }
+    }
+
+    return { success: false, error: errorMessage }
+  }
+}
+
+/**
+ * Posts a signup message to a Discord channel with reaction emojis
+ */
+export async function postSignupMessage(
+  channelId: string,
+  gameDetails: {
+    name: string
+    date: string
+    time: string
+    map?: string
+    mode?: string
+  }
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    const rest = getDiscordREST()
+
+    // Format game details into message
+    const messageContent = `
+🎮 **${gameDetails.name}**
+
+📅 **Date:** ${gameDetails.date}
+⏰ **Time:** ${gameDetails.time}
+${gameDetails.map ? `🗺️ **Map:** ${gameDetails.map}\n` : ''}${gameDetails.mode ? `🎯 **Mode:** ${gameDetails.mode}\n` : ''}
+**Sign up by reacting with your preferred role:**
+⚔️ - Commander
+🎖️ - Squad Lead
+🔫 - Infantry
+🚗 - Armour
+🔭 - Recon
+    `.trim()
+
+    // Post message
+    const message = await rest.post(Routes.channelMessages(channelId), {
+      body: { content: messageContent }
+    }) as { id: string }
+
+    // Add reactions
+    const reactionEmojis = ['⚔️', '🎖️', '🔫', '🚗', '🔭']
+    for (const emoji of reactionEmojis) {
+      await rest.put(
+        Routes.channelMessageOwnReaction(channelId, message.id, encodeURIComponent(emoji))
+      )
+    }
+
+    return { success: true, messageId: message.id }
+  } catch (error: unknown) {
+    console.error('Discord message post error:', error)
+
+    let errorMessage = 'Unknown error'
+    if (typeof error === 'object' && error !== null) {
+      const err = error as { message?: string }
+      if (err.message) {
+        errorMessage = err.message
+      }
+    }
+
+    return { success: false, error: errorMessage }
+  }
+}

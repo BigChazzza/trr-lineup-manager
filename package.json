@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "discord-bot": "tsx src/scripts/discord-listener.ts"
   },
   "dependencies": {
     "@discordjs/rest": "^2.6.0",
@@ -26,6 +27,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "discord-api-types": "^0.38.41",
+    "discord.js": "^14.25.1",
     "lucide-react": "^0.577.0",
     "next": "^15.3.0",
     "react": "^19.0.0",

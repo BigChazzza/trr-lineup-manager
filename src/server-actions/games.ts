@@ -5,6 +5,8 @@ import { getUser } from '@/lib/auth/getSession'
 import { requireAdmin } from '@/lib/auth/roles'
 import { gameSchema, type GameFormData } from '@/lib/schemas/games'
 import { revalidatePath } from 'next/cache'
+import { createDiscordChannel, postSignupMessage } from '@/lib/discord/bot'
+import { getBotConfig } from './bot-config'
 
 export async function createGame(formData: GameFormData) {
   try {
@@ -45,6 +47,41 @@ export async function createGame(formData: GameFormData) {
     if (error) {
       console.error('Error creating game:', error)
       return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
+    }
+
+    // Try to create Discord channel (non-blocking - don't fail if it errors)
+    try {
+      const configResult = await getBotConfig()
+      if (configResult.success && configResult.data) {
+        const { guild_id, signup_category_id } = configResult.data
+
+        // Create channel with sanitized name (Discord allows only lowercase, numbers, and hyphens)
+        const channelName = `${data.name.toLowerCase().replace(/[^a-z0-9-]/g, '-')}-${data.id.slice(0, 8)}`
+        const channelResult = await createDiscordChannel(guild_id, signup_category_id, channelName)
+
+        if (channelResult.success && channelResult.channelId) {
+          // Post signup message
+          const messageResult = await postSignupMessage(channelResult.channelId, {
+            name: data.name,
+            date: data.date,
+            time: data.time,
+            map: data.map || undefined,
+            mode: data.mode || undefined
+          })
+
+          // Update game with Discord IDs
+          await supabase
+            .from('games')
+            .update({
+              discord_channel_id: channelResult.channelId,
+              discord_message_id: messageResult.messageId || null
+            })
+            .eq('id', data.id)
+        }
+      }
+    } catch (discordError) {
+      console.error('Discord channel creation failed (non-fatal):', discordError)
+      // Don't return error - game was created successfully
     }
 
     revalidatePath('/games')

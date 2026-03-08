@@ -48,6 +48,7 @@ interface Signup {
     username: string
     avatar_url: string | null
   }
+  role_preference?: string | null
   assignment?: Array<{
     squad_id: string | null
     role_id: string | null
@@ -258,6 +259,11 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
                           {isAssigned && (
                             <Badge variant="secondary" className="text-xs bg-green-600 text-white">
                               Assigned
+                            </Badge>
+                          )}
+                          {signup.role_preference && (
+                            <Badge variant="outline" className="text-xs">
+                              Prefers: {signup.role_preference}
                             </Badge>
                           )}
                         </div>
