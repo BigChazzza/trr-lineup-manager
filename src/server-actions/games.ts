@@ -277,17 +277,15 @@ export async function postLineupToDiscord(gameId: string) {
     }
 
     // Build lineup data structure
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     const sortedSquads = [...game.playbook.squads].sort((a: any, b: any) => a.squad_order - b.squad_order)
 
     const squads = sortedSquads.map((squad) => ({
       name: squad.name,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       roles: squad.squad_roles
         .sort((a: any, b: any) => a.role_order - b.role_order)
         .map((role: any) => {
           // Find player assigned to this role
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const assignedSignup = game.signups.find(
             (s: any) => s.assignment?.[0]?.role_id === role.id
           )
@@ -299,10 +297,10 @@ export async function postLineupToDiscord(gameId: string) {
     }))
 
     // Get unassigned players
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const unassignedPlayers = game.signups
       .filter((signup: any) => !signup.assignment || signup.assignment.length === 0 || !signup.assignment[0].squad_id || !signup.assignment[0].role_id)
       .map((signup: any) => signup.user.username)
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 
     // Post to Discord
     const result = await postLineupSummary(game.discord_channel_id, {
