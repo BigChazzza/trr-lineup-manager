@@ -99,6 +99,7 @@ export async function createDiscordChannel(
 export async function postSignupMessage(
   channelId: string,
   gameDetails: {
+    gameId: string
     name: string
     date: string
     time: string
@@ -108,6 +109,10 @@ export async function postSignupMessage(
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
     const rest = getDiscordREST()
+
+    // Build game link
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const gameLink = `${appUrl}/games/${gameDetails.gameId}`
 
     // Format game details into message
     const messageContent = `
@@ -122,6 +127,8 @@ ${gameDetails.map ? `🗺️ **Map:** ${gameDetails.map}\n` : ''}${gameDetails.m
 🔫 - Infantry
 🚗 - Armour
 🔭 - Recon
+
+**[View Game Details & Lineup](<${gameLink}>)**
     `.trim()
 
     // Post message

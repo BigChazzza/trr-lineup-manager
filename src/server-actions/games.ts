@@ -63,6 +63,7 @@ export async function createGame(formData: GameFormData) {
         if (channelResult.success && channelResult.channelId) {
           // Post signup message
           const messageResult = await postSignupMessage(channelResult.channelId, {
+            gameId: data.id,
             name: data.name,
             date: data.date,
             time: data.time,

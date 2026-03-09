@@ -70,6 +70,7 @@ export async function GET() {
     // 4. Try to post a test message
     if (channelResult.channelId) {
       const messageResult = await postSignupMessage(channelResult.channelId, {
+        gameId: 'test-game-id',
         name: 'Test Game',
         date: '2024-01-01',
         time: '19:00',
