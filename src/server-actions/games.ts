@@ -56,8 +56,8 @@ export async function createGame(formData: GameFormData) {
       if (configResult.success && configResult.data) {
         const { guild_id, signup_category_id } = configResult.data
 
-        // Create channel with sanitized name (Discord allows only lowercase, numbers, and hyphens)
-        const channelName = `${data.name.toLowerCase().replace(/[^a-z0-9-]/g, '-')}-${data.id.slice(0, 8)}`
+        // Create channel with green tick emoji and game name (Discord sanitizes automatically)
+        const channelName = `✅-${data.name.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`
         const channelResult = await createDiscordChannel(guild_id, signup_category_id, channelName)
 
         if (channelResult.success && channelResult.channelId) {
