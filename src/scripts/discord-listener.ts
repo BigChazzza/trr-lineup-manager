@@ -63,7 +63,9 @@ async function updateSignupMessage(message: Message) {
       for (const signup of signups) {
         const roleEmoji = Object.keys(ROLE_MAP).find(emoji => ROLE_MAP[emoji] === signup.role_preference)
         if (roleEmoji && signup.user) {
-          const displayName = signup.user.server_nickname || signup.user.username
+          // Type assertion needed due to Supabase type inference
+          const user = signup.user as unknown as { server_nickname?: string | null; username: string; discord_id: string }
+          const displayName = user.server_nickname || user.username
           signupsByRole[roleEmoji].push(displayName)
         }
       }
