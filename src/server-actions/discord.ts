@@ -54,7 +54,7 @@ export async function sendRoleNotifications(gameId: string) {
     console.log('Fetching signups for game:', gameId)
     const { data: signups, error: signupsError } = await supabase
       .from('signups')
-      .select('*, user:users!signups_user_id_fkey(username, discord_id)')
+      .select('*, user:users!signups_user_id_fkey(username, server_nickname, discord_id)')
       .eq('game_id', gameId)
 
     console.log('Signups query result:', { signupsCount: signups?.length, signupsError })
@@ -121,7 +121,7 @@ export async function sendRoleNotifications(gameId: string) {
 
       if (!squad || !role) {
         results.push({
-          username: signup.user.username,
+          username: signup.user.server_nickname || signup.user.username,
           success: false,
           error: 'Squad or role not found in playbook'
         })
@@ -158,12 +158,12 @@ ${tasks || 'No specific objectives assigned'}
 Good luck on the battlefield! 🪖
       `.trim()
 
-      console.log(`Sending DM to ${signup.user.username} (Discord ID: ${signup.user.discord_id})`)
+      console.log(`Sending DM to ${signup.user.server_nickname || signup.user.username} (Discord ID: ${signup.user.discord_id})`)
       const result = await sendDiscordDM(signup.user.discord_id, message)
-      console.log(`Result for ${signup.user.username}:`, result)
+      console.log(`Result for ${signup.user.server_nickname || signup.user.username}:`, result)
 
       results.push({
-        username: signup.user.username,
+        username: signup.user.server_nickname || signup.user.username,
         success: result.success,
         error: result.error
       })

@@ -77,13 +77,33 @@ client.on('messageReactionAdd', async (reaction, user) => {
     // Find user in database by Discord ID
     const { data: dbUser, error: userError } = await supabase
       .from('users')
-      .select('id, username')
+      .select('id, username, server_nickname')
       .eq('discord_id', user.id)
       .single()
 
     if (userError || !dbUser) {
       console.log(`⚠️  User ${user.tag} (${user.id}) not found in database`)
       return
+    }
+
+    // Update server nickname if we have guild context
+    if (reaction.message.guild) {
+      try {
+        const member = await reaction.message.guild.members.fetch(user.id)
+        const serverNickname = member.nickname || member.user.globalName || member.user.username
+
+        // Update nickname in database if different
+        if (serverNickname && serverNickname !== dbUser.server_nickname) {
+          await supabase
+            .from('users')
+            .update({ server_nickname: serverNickname, updated_at: new Date().toISOString() })
+            .eq('discord_id', user.id)
+
+          console.log(`🔄 Updated nickname for ${user.tag}: ${serverNickname}`)
+        }
+      } catch (error) {
+        console.error('Failed to fetch guild member:', error)
+      }
     }
 
     // Check if already signed up
@@ -95,7 +115,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
       .maybeSingle()
 
     if (existing) {
-      console.log(`ℹ️  ${dbUser.username} already signed up for ${game.name}`)
+      console.log(`ℹ️  ${dbUser.server_nickname || dbUser.username} already signed up for ${game.name}`)
       return
     }
 
@@ -109,9 +129,9 @@ client.on('messageReactionAdd', async (reaction, user) => {
       })
 
     if (signupError) {
-      console.error(`❌ Failed to create signup for ${dbUser.username}:`, signupError.message)
+      console.error(`❌ Failed to create signup for ${dbUser.server_nickname || dbUser.username}:`, signupError.message)
     } else {
-      console.log(`✅ ${dbUser.username} signed up for "${game.name}" as ${rolePreference}`)
+      console.log(`✅ ${dbUser.server_nickname || dbUser.username} signed up for "${game.name}" as ${rolePreference}`)
     }
   } catch (error) {
     console.error('❌ Error handling reaction:', error)

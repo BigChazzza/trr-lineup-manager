@@ -7,7 +7,7 @@ export async function getGames(status?: string) {
     .from('games')
     .select(`
       *,
-      created_by_user:users!games_created_by_fkey(username, avatar_url),
+      created_by_user:users!games_created_by_fkey(username, server_nickname, avatar_url),
       playbook:playbooks(name)
     `)
     .order('date', { ascending: true })
@@ -34,13 +34,13 @@ export async function getGameById(id: string) {
     .from('games')
     .select(`
       *,
-      created_by_user:users!games_created_by_fkey(username, avatar_url),
+      created_by_user:users!games_created_by_fkey(username, server_nickname, avatar_url),
       signups(
         id,
         user_id,
         signed_up_at,
         role_preference,
-        user:users!signups_user_id_fkey(id, username, avatar_url),
+        user:users!signups_user_id_fkey(id, username, server_nickname, avatar_url),
         assignment:game_assignments(squad_id, role_id)
       )
     `)
@@ -88,7 +88,7 @@ export async function getGameSignups(gameId: string) {
     .from('signups')
     .select(`
       *,
-      user:users(id, username, avatar_url),
+      user:users(id, username, server_nickname, avatar_url),
       assignment:game_assignments(
         id,
         squad_id,

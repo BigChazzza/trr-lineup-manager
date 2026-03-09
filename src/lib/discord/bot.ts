@@ -1,5 +1,6 @@
 import { REST } from '@discordjs/rest'
 import { Routes } from 'discord-api-types/v10'
+import type { RESTGetAPIGuildMemberResult } from 'discord-api-types/v10'
 
 // Initialize Discord REST client (singleton pattern)
 let restClient: REST | null = null
@@ -229,6 +230,44 @@ ${squadsList}${unassignedList}
     if (typeof error === 'object' && error !== null) {
       const err = error as { message?: string }
       if (err.message) {
+        errorMessage = err.message
+      }
+    }
+
+    return { success: false, error: errorMessage }
+  }
+}
+
+/**
+ * Fetches a guild member's server nickname from Discord
+ * @param guildId - Discord server (guild) ID
+ * @param userId - Discord user ID
+ * @returns Server nickname or null if not found
+ */
+export async function getGuildMemberNickname(
+  guildId: string,
+  userId: string
+): Promise<{ success: boolean; nickname?: string | null; error?: string }> {
+  try {
+    const rest = getDiscordREST()
+
+    const member = await rest.get(
+      Routes.guildMember(guildId, userId)
+    ) as RESTGetAPIGuildMemberResult
+
+    // Discord returns 'nick' for server nickname, fallback to global username
+    const nickname = member.nick || member.user?.global_name || member.user?.username || null
+
+    return { success: true, nickname }
+  } catch (error: unknown) {
+    console.error('Error fetching guild member:', error)
+
+    let errorMessage = 'Unknown error'
+    if (typeof error === 'object' && error !== null) {
+      const err = error as { code?: number; message?: string }
+      if (err.code === 10007) {
+        errorMessage = 'User not found in guild'
+      } else if (err.message) {
         errorMessage = err.message
       }
     }

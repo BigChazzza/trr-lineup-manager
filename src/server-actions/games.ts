@@ -291,7 +291,7 @@ export async function postLineupToDiscord(gameId: string) {
           )
           return {
             roleName: role.role_name,
-            playerUsername: assignedSignup?.user.username || null
+            playerUsername: assignedSignup?.user.server_nickname || assignedSignup?.user.username || null
           }
         })
     }))
@@ -299,7 +299,7 @@ export async function postLineupToDiscord(gameId: string) {
     // Get unassigned players
     const unassignedPlayers = game.signups
       .filter((signup: any) => !signup.assignment || signup.assignment.length === 0 || !signup.assignment[0].squad_id || !signup.assignment[0].role_id)
-      .map((signup: any) => signup.user.username)
+      .map((signup: any) => signup.user.server_nickname || signup.user.username)
     /* eslint-enable @typescript-eslint/no-explicit-any */
 
     // Post to Discord
