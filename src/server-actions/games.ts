@@ -330,8 +330,8 @@ export async function postLineupToDiscord(gameId: string) {
     // Build lineup data structure
     const sortedSquads = [...playbook.squads].sort((a, b) => a.squad_order - b.squad_order)
 
-    // Type assertion for signups
-    const signups = game.signups as Array<{
+    // Type assertion for signups (two-step via unknown to handle Supabase type inference)
+    const signups = game.signups as unknown as Array<{
       id: string
       user: { id: string; username: string }
       assignment: Array<{ squad_id: string | null; role_id: string | null }> | null
