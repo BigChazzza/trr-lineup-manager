@@ -5,7 +5,7 @@ import { getUser } from '@/lib/auth/getSession'
 import { requireAdmin } from '@/lib/auth/roles'
 import { gameSchema, type GameFormData } from '@/lib/schemas/games'
 import { revalidatePath } from 'next/cache'
-import { createDiscordChannel, postSignupMessage } from '@/lib/discord/bot'
+import { createDiscordChannel, postSignupMessage, postLineupSummary } from '@/lib/discord/bot'
 import { getBotConfig } from './bot-config'
 
 export async function createGame(formData: GameFormData) {
@@ -252,5 +252,108 @@ export async function saveGameAssignments(
   } catch (error: unknown) {
     console.error('Error in saveGameAssignments:', error)
     return { success: false, error: error instanceof Error ? error.message : 'Failed to save assignments' }
+  }
+}
+
+export async function postLineupToDiscord(gameId: string) {
+  try {
+    await requireAdmin()
+
+    const supabase = await createClient()
+
+    // Get game with all details, squads, assignments, and signups
+    const { data: game, error: gameError } = await supabase
+      .from('games')
+      .select(`
+        id,
+        name,
+        date,
+        time,
+        map,
+        mode,
+        faction,
+        discord_channel_id,
+        playbook:playbooks(
+          id,
+          name,
+          squads:playbook_squads(
+            id,
+            name,
+            squad_order,
+            squad_roles:playbook_squad_roles(
+              id,
+              role_name,
+              role_order
+            )
+          )
+        ),
+        signups(
+          id,
+          user:users!signups_user_id_fkey(id, username),
+          assignment:game_assignments(
+            squad_id,
+            role_id
+          )
+        )
+      `)
+      .eq('id', gameId)
+      .single()
+
+    if (gameError || !game) {
+      return { success: false, error: 'Game not found' }
+    }
+
+    if (!game.discord_channel_id) {
+      return { success: false, error: 'This game does not have a Discord channel' }
+    }
+
+    if (!game.playbook || !game.playbook.squads || game.playbook.squads.length === 0) {
+      return { success: false, error: 'This game does not have a playbook assigned' }
+    }
+
+    // Build lineup data structure
+    const sortedSquads = [...game.playbook.squads].sort((a, b) => a.squad_order - b.squad_order)
+
+    const squads = sortedSquads.map((squad) => ({
+      name: squad.name,
+      roles: squad.squad_roles
+        .sort((a, b) => a.role_order - b.role_order)
+        .map((role) => {
+          // Find player assigned to this role
+          const assignedSignup = game.signups.find(
+            (s) => s.assignment?.[0]?.role_id === role.id
+          )
+          return {
+            roleName: role.role_name,
+            playerUsername: assignedSignup?.user.username || null
+          }
+        })
+    }))
+
+    // Get unassigned players
+    const unassignedPlayers = game.signups
+      .filter((signup) => !signup.assignment || signup.assignment.length === 0 || !signup.assignment[0].squad_id || !signup.assignment[0].role_id)
+      .map((signup) => signup.user.username)
+
+    // Post to Discord
+    const result = await postLineupSummary(game.discord_channel_id, {
+      gameName: game.name,
+      gameDate: game.date,
+      gameTime: game.time,
+      map: game.map || undefined,
+      mode: game.mode || undefined,
+      faction: game.faction || undefined,
+      squads,
+      unassignedPlayers
+    })
+
+    if (!result.success) {
+      return { success: false, error: result.error || 'Failed to post lineup to Discord' }
+    }
+
+    return { success: true, messageId: result.messageId }
+  } catch (error: unknown) {
+    console.error('Error in postLineupToDiscord:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to post lineup' }
   }
 }

@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
-import { saveGameAssignments } from '@/server-actions/games'
+import { saveGameAssignments, postLineupToDiscord } from '@/server-actions/games'
 import { sendRoleNotifications } from '@/server-actions/discord'
 import {
   Dialog,
@@ -102,6 +102,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
   })
   const [isSaving, setIsSaving] = useState(false)
   const [isSendingNotifications, setIsSendingNotifications] = useState(false)
+  const [isPostingLineup, setIsPostingLineup] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [sendResults, setSendResults] = useState<SendResults | null>(null)
 
@@ -182,6 +183,35 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
     }
   }
 
+  const handlePostLineup = async () => {
+    setIsPostingLineup(true)
+
+    try {
+      const result = await postLineupToDiscord(gameId)
+
+      if (result.success) {
+        toast({
+          title: 'Lineup posted to Discord',
+          description: 'The lineup has been posted to the game channel',
+        })
+      } else {
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to post lineup',
+          variant: 'destructive',
+        })
+      }
+    } catch (error: unknown) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to post lineup',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsPostingLineup(false)
+    }
+  }
+
   const sortedSquads = [...squads].sort((a, b) => a.squad_order - b.squad_order)
 
   const assignedCount = signups.filter(s => {
@@ -208,13 +238,20 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
         <h2 className="text-2xl font-bold text-gray-900">Assign Players to Squads</h2>
         <div className="flex gap-3">
           <Button
+            onClick={handlePostLineup}
+            disabled={isSaving || isSendingNotifications || isPostingLineup || assignedCount === 0}
+            variant="outline"
+          >
+            {isPostingLineup ? 'Posting...' : 'Post Lineup to Discord'}
+          </Button>
+          <Button
             onClick={() => setShowConfirmDialog(true)}
-            disabled={isSaving || isSendingNotifications || assignedCount === 0}
+            disabled={isSaving || isSendingNotifications || isPostingLineup || assignedCount === 0}
             variant="outline"
           >
             {isSendingNotifications ? 'Sending...' : 'Send Roles to Discord'}
           </Button>
-          <Button onClick={handleSave} disabled={isSaving || isSendingNotifications}>
+          <Button onClick={handleSave} disabled={isSaving || isSendingNotifications || isPostingLineup}>
             {isSaving ? 'Saving...' : 'Save Assignments'}
           </Button>
         </div>

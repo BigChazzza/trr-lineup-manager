@@ -152,3 +152,80 @@ ${gameDetails.map ? `🗺️ **Map:** ${gameDetails.map}\n` : ''}${gameDetails.m
     return { success: false, error: errorMessage }
   }
 }
+
+/**
+ * Posts a formatted lineup summary to a Discord channel
+ */
+export async function postLineupSummary(
+  channelId: string,
+  lineup: {
+    gameName: string
+    gameDate: string
+    gameTime: string
+    map?: string
+    mode?: string
+    faction?: string
+    squads: Array<{
+      name: string
+      roles: Array<{
+        roleName: string
+        playerUsername: string | null
+      }>
+    }>
+    unassignedPlayers: string[]
+  }
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    const rest = getDiscordREST()
+
+    // Format squads
+    const squadsList = lineup.squads
+      .map((squad) => {
+        const rolesList = squad.roles
+          .map((role) => `  ${role.roleName}: ${role.playerUsername || '—'}`)
+          .join('\n')
+        return `**${squad.name}**\n${rolesList}`
+      })
+      .join('\n\n')
+
+    // Format unassigned players
+    const unassignedList = lineup.unassignedPlayers.length > 0
+      ? `\n\n**Unassigned Players:**\n${lineup.unassignedPlayers.map(p => `• ${p}`).join('\n')}`
+      : ''
+
+    // Game details
+    const gameDetails = [
+      lineup.map && `Map: ${lineup.map}`,
+      lineup.mode && `Mode: ${lineup.mode}`,
+      lineup.faction && `Faction: ${lineup.faction}`
+    ].filter(Boolean).join(' • ')
+
+    const messageContent = `
+📋 **${lineup.gameName} - LINEUP**
+
+📅 **Date:** ${lineup.gameDate}
+⏰ **Time:** ${lineup.gameTime}
+${gameDetails ? `🗺️ **Details:** ${gameDetails}\n` : ''}
+${squadsList}${unassignedList}
+    `.trim()
+
+    // Post message
+    const message = await rest.post(Routes.channelMessages(channelId), {
+      body: { content: messageContent }
+    }) as { id: string }
+
+    return { success: true, messageId: message.id }
+  } catch (error: unknown) {
+    console.error('Discord lineup post error:', error)
+
+    let errorMessage = 'Unknown error'
+    if (typeof error === 'object' && error !== null) {
+      const err = error as { message?: string }
+      if (err.message) {
+        errorMessage = err.message
+      }
+    }
+
+    return { success: false, error: errorMessage }
+  }
+}
