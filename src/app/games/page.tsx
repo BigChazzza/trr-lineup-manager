@@ -80,7 +80,7 @@ export default async function GamesPage() {
                           </p>
                         )}
                         <p className="text-muted-foreground text-xs mt-4">
-                          Created by {game.created_by_user?.username || 'Unknown'}
+                          Created by {game.created_by_user?.server_nickname || game.created_by_user?.username || 'Unknown'}
                         </p>
                       </div>
                     </CardContent>

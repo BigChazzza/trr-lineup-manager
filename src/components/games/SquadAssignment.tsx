@@ -46,6 +46,7 @@ interface Signup {
   user: {
     id: string
     username: string
+    server_nickname?: string | null
     avatar_url: string | null
   }
   role_preference?: string | null
@@ -284,15 +285,15 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
                       <Avatar className="h-10 w-10 ring-1 ring-gray-300">
                         <AvatarImage
                           src={signup.user.avatar_url || undefined}
-                          alt={signup.user.username}
+                          alt={signup.user.server_nickname || signup.user.username}
                         />
                         <AvatarFallback className="bg-gray-100 text-foreground">
-                          {signup.user.username.slice(0, 2).toUpperCase()}
+                          {(signup.user.server_nickname || signup.user.username).slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium">{signup.user.username}</p>
+                          <p className="font-medium">{signup.user.server_nickname || signup.user.username}</p>
                           {isAssigned && (
                             <Badge variant="secondary" className="text-xs bg-green-600 text-white">
                               Assigned
@@ -413,7 +414,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
                             <div key={role.id} className="flex justify-between text-xs">
                               <span className="text-muted-foreground">{role.role_name}</span>
                               <span className="font-medium">
-                                {assignedPlayer ? assignedPlayer.user.username : '—'}
+                                {assignedPlayer ? (assignedPlayer.user.server_nickname || assignedPlayer.user.username) : '—'}
                               </span>
                             </div>
                           )
