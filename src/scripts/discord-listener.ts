@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials, Message } from 'discord.js'
+import { Client, GatewayIntentBits, Partials, Message, PartialMessage } from 'discord.js'
 import { createClient } from '@supabase/supabase-js'
 
 // Emoji to role mapping
@@ -31,18 +31,21 @@ const supabase = createClient(
 )
 
 // Helper function to update signup message with signed up users
-async function updateSignupMessage(message: Message) {
+async function updateSignupMessage(message: Message | PartialMessage) {
   try {
     // Fetch full message if partial
+    let fullMessage: Message
     if (message.partial) {
-      await message.fetch()
+      fullMessage = await message.fetch() as Message
+    } else {
+      fullMessage = message
     }
 
     // Get game from message ID
     const { data: game } = await supabase
       .from('games')
       .select('id, name, date, time, map, mode')
-      .eq('discord_message_id', message.id)
+      .eq('discord_message_id', fullMessage.id)
       .single()
 
     if (!game) return
@@ -95,7 +98,7 @@ ${game.map ? `🗺️ **Map:** ${game.map}\n` : ''}${game.mode ? `🎯 **Mode:**
 
     messageContent += `\n\n**[View Game Details & Lineup](<${gameLink}>)**`
 
-    await message.edit(messageContent.trim())
+    await fullMessage.edit(messageContent.trim())
   } catch (error) {
     console.error('Failed to update signup message:', error)
   }
