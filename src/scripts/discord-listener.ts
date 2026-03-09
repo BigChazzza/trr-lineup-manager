@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits } from 'discord.js'
+import { Client, GatewayIntentBits, Partials } from 'discord.js'
 import { createClient } from '@supabase/supabase-js'
 
 // Emoji to role mapping
@@ -10,11 +10,17 @@ const ROLE_MAP: Record<string, string> = {
   '🔭': 'Recon'
 }
 
-// Initialize Discord client with required intents
+// Initialize Discord client with required intents and partials
+// Partials are CRITICAL for detecting reactions on messages that aren't in cache
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessageReactions,
+  ],
+  partials: [
+    Partials.Message,      // Required to receive events for uncached messages
+    Partials.Channel,      // Required if message is in uncached channel
+    Partials.Reaction,     // Required to receive reaction events for uncached messages
   ],
 })
 
@@ -24,18 +30,35 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-client.on('ready', () => {
+client.on('clientReady', () => {
   console.log(`✅ Discord bot logged in as ${client.user?.tag}`)
+  console.log(`🔧 Partials configured: Message, Channel, Reaction`)
   console.log(`👀 Listening for reactions on signup messages...`)
 })
 
 client.on('messageReactionAdd', async (reaction, user) => {
   try {
+    // Fetch partial reactions (messages not in cache)
+    if (reaction.partial) {
+      try {
+        await reaction.fetch()
+        console.log(`🔄 Fetched partial reaction for message ${reaction.message.id}`)
+      } catch (error) {
+        console.error('❌ Failed to fetch reaction:', error)
+        return
+      }
+    }
+
     // Ignore bot reactions
     if (user.bot) return
 
     const emoji = reaction.emoji.name
-    if (!emoji || !ROLE_MAP[emoji]) return
+    console.log(`👉 Reaction received: ${emoji} from ${user.tag} on message ${reaction.message.id}`)
+
+    if (!emoji || !ROLE_MAP[emoji]) {
+      console.log(`ℹ️  Emoji ${emoji} not in role map, ignoring`)
+      return
+    }
 
     const rolePreference = ROLE_MAP[emoji]
 
