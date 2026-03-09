@@ -307,12 +307,35 @@ export async function postLineupToDiscord(gameId: string) {
       return { success: false, error: 'This game does not have a Discord channel' }
     }
 
-    if (!game.playbook || !game.playbook.squads || game.playbook.squads.length === 0) {
+    // Type assertion for playbook (Supabase returns single object, but TS infers as array)
+    const playbook = game.playbook as unknown as {
+      id: string
+      name: string
+      squads: Array<{
+        id: string
+        name: string
+        squad_order: number
+        squad_roles: Array<{
+          id: string
+          role_name: string
+          role_order: number
+        }>
+      }>
+    } | null
+
+    if (!playbook || !playbook.squads || playbook.squads.length === 0) {
       return { success: false, error: 'This game does not have a playbook assigned' }
     }
 
     // Build lineup data structure
-    const sortedSquads = [...game.playbook.squads].sort((a, b) => a.squad_order - b.squad_order)
+    const sortedSquads = [...playbook.squads].sort((a, b) => a.squad_order - b.squad_order)
+
+    // Type assertion for signups
+    const signups = game.signups as Array<{
+      id: string
+      user: { id: string; username: string }
+      assignment: Array<{ squad_id: string | null; role_id: string | null }> | null
+    }>
 
     const squads = sortedSquads.map((squad) => ({
       name: squad.name,
@@ -320,7 +343,7 @@ export async function postLineupToDiscord(gameId: string) {
         .sort((a, b) => a.role_order - b.role_order)
         .map((role) => {
           // Find player assigned to this role
-          const assignedSignup = game.signups.find(
+          const assignedSignup = signups.find(
             (s) => s.assignment?.[0]?.role_id === role.id
           )
           return {
@@ -331,7 +354,7 @@ export async function postLineupToDiscord(gameId: string) {
     }))
 
     // Get unassigned players
-    const unassignedPlayers = game.signups
+    const unassignedPlayers = signups
       .filter((signup) => !signup.assignment || signup.assignment.length === 0 || !signup.assignment[0].squad_id || !signup.assignment[0].role_id)
       .map((signup) => signup.user.username)
 
