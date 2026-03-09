@@ -7,6 +7,7 @@ import { gameSchema, type GameFormData } from '@/lib/schemas/games'
 import { revalidatePath } from 'next/cache'
 import { createDiscordChannel, postSignupMessage, postLineupSummary } from '@/lib/discord/bot'
 import { getBotConfig } from './bot-config'
+import { getGameById } from '@/lib/db/games'
 
 export async function createGame(formData: GameFormData) {
   try {
@@ -259,47 +260,10 @@ export async function postLineupToDiscord(gameId: string) {
   try {
     await requireAdmin()
 
-    const supabase = await createClient()
+    // Use existing getGameById function which properly handles nested queries
+    const game = await getGameById(gameId)
 
-    // Get game with all details, squads, assignments, and signups
-    const { data: game, error: gameError } = await supabase
-      .from('games')
-      .select(`
-        id,
-        name,
-        date,
-        time,
-        map,
-        mode,
-        faction,
-        discord_channel_id,
-        playbook:playbooks(
-          id,
-          name,
-          squads:playbook_squads(
-            id,
-            name,
-            squad_order,
-            squad_roles:playbook_squad_roles(
-              id,
-              role_name,
-              role_order
-            )
-          )
-        ),
-        signups(
-          id,
-          user:users!signups_user_id_fkey(id, username),
-          assignment:game_assignments(
-            squad_id,
-            role_id
-          )
-        )
-      `)
-      .eq('id', gameId)
-      .single()
-
-    if (gameError || !game) {
+    if (!game) {
       return { success: false, error: 'Game not found' }
     }
 
@@ -307,35 +271,12 @@ export async function postLineupToDiscord(gameId: string) {
       return { success: false, error: 'This game does not have a Discord channel' }
     }
 
-    // Type assertion for playbook (Supabase returns single object, but TS infers as array)
-    const playbook = game.playbook as unknown as {
-      id: string
-      name: string
-      squads: Array<{
-        id: string
-        name: string
-        squad_order: number
-        squad_roles: Array<{
-          id: string
-          role_name: string
-          role_order: number
-        }>
-      }>
-    } | null
-
-    if (!playbook || !playbook.squads || playbook.squads.length === 0) {
+    if (!game.playbook || !game.playbook.squads || game.playbook.squads.length === 0) {
       return { success: false, error: 'This game does not have a playbook assigned' }
     }
 
     // Build lineup data structure
-    const sortedSquads = [...playbook.squads].sort((a, b) => a.squad_order - b.squad_order)
-
-    // Type assertion for signups (two-step via unknown to handle Supabase type inference)
-    const signups = game.signups as unknown as Array<{
-      id: string
-      user: { id: string; username: string }
-      assignment: Array<{ squad_id: string | null; role_id: string | null }> | null
-    }>
+    const sortedSquads = [...game.playbook.squads].sort((a, b) => a.squad_order - b.squad_order)
 
     const squads = sortedSquads.map((squad) => ({
       name: squad.name,
@@ -343,7 +284,7 @@ export async function postLineupToDiscord(gameId: string) {
         .sort((a, b) => a.role_order - b.role_order)
         .map((role) => {
           // Find player assigned to this role
-          const assignedSignup = signups.find(
+          const assignedSignup = game.signups.find(
             (s) => s.assignment?.[0]?.role_id === role.id
           )
           return {
@@ -354,7 +295,7 @@ export async function postLineupToDiscord(gameId: string) {
     }))
 
     // Get unassigned players
-    const unassignedPlayers = signups
+    const unassignedPlayers = game.signups
       .filter((signup) => !signup.assignment || signup.assignment.length === 0 || !signup.assignment[0].squad_id || !signup.assignment[0].role_id)
       .map((signup) => signup.user.username)
 
