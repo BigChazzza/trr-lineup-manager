@@ -31,21 +31,13 @@ const supabase = createClient(
 )
 
 // Helper function to update signup message with signed up users
-async function updateSignupMessage(message: Message | PartialMessage) {
+async function updateSignupMessage(message: Message) {
   try {
-    // Fetch full message if partial
-    let fullMessage: Message
-    if (message.partial) {
-      fullMessage = await message.fetch() as Message
-    } else {
-      fullMessage = message
-    }
-
     // Get game from message ID
     const { data: game } = await supabase
       .from('games')
       .select('id, name, date, time, map, mode')
-      .eq('discord_message_id', fullMessage.id)
+      .eq('discord_message_id', message.id)
       .single()
 
     if (!game) return
@@ -98,7 +90,7 @@ ${game.map ? `🗺️ **Map:** ${game.map}\n` : ''}${game.mode ? `🎯 **Mode:**
 
     messageContent += `\n\n**[View Game Details & Lineup](<${gameLink}>)**`
 
-    await fullMessage.edit(messageContent.trim())
+    await message.edit(messageContent.trim())
   } catch (error) {
     console.error('Failed to update signup message:', error)
   }
@@ -123,11 +115,22 @@ client.on('messageReactionAdd', async (reaction, user) => {
       }
     }
 
+    // Fetch the message if it's partial
+    let message = reaction.message
+    if (message.partial) {
+      try {
+        message = await message.fetch()
+      } catch (error) {
+        console.error('❌ Failed to fetch message:', error)
+        return
+      }
+    }
+
     // Ignore bot reactions
     if (user.bot) return
 
     const emoji = reaction.emoji.name
-    console.log(`👉 Reaction received: ${emoji} from ${user.tag} on message ${reaction.message.id}`)
+    console.log(`👉 Reaction received: ${emoji} from ${user.tag} on message ${message.id}`)
 
     if (!emoji || !ROLE_MAP[emoji]) {
       console.log(`ℹ️  Emoji ${emoji} not in role map, ignoring`)
@@ -140,11 +143,11 @@ client.on('messageReactionAdd', async (reaction, user) => {
     const { data: game, error: gameError } = await supabase
       .from('games')
       .select('id, name')
-      .eq('discord_message_id', reaction.message.id)
+      .eq('discord_message_id', message.id)
       .single()
 
     if (gameError || !game) {
-      console.log(`ℹ️  No game found for message ${reaction.message.id}`)
+      console.log(`ℹ️  No game found for message ${message.id}`)
       return
     }
 
@@ -161,9 +164,9 @@ client.on('messageReactionAdd', async (reaction, user) => {
     }
 
     // Update server nickname if we have guild context
-    if (reaction.message.guild) {
+    if (message.guild) {
       try {
-        const member = await reaction.message.guild.members.fetch(user.id)
+        const member = await message.guild.members.fetch(user.id)
         const serverNickname = member.nickname || member.user.globalName || member.user.username
 
         // Update nickname in database if different
@@ -208,7 +211,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
       console.log(`✅ ${dbUser.server_nickname || dbUser.username} signed up for "${game.name}" as ${rolePreference}`)
 
       // Update the signup message to show who signed up
-      await updateSignupMessage(reaction.message)
+      await updateSignupMessage(message)
     }
   } catch (error) {
     console.error('❌ Error handling reaction:', error)
@@ -228,11 +231,22 @@ client.on('messageReactionRemove', async (reaction, user) => {
       }
     }
 
+    // Fetch the message if it's partial
+    let message = reaction.message
+    if (message.partial) {
+      try {
+        message = await message.fetch()
+      } catch (error) {
+        console.error('❌ Failed to fetch message:', error)
+        return
+      }
+    }
+
     // Ignore bot reactions
     if (user.bot) return
 
     const emoji = reaction.emoji.name
-    console.log(`👈 Reaction removed: ${emoji} from ${user.tag} on message ${reaction.message.id}`)
+    console.log(`👈 Reaction removed: ${emoji} from ${user.tag} on message ${message.id}`)
 
     if (!emoji || !ROLE_MAP[emoji]) {
       console.log(`ℹ️  Emoji ${emoji} not in role map, ignoring`)
@@ -243,11 +257,11 @@ client.on('messageReactionRemove', async (reaction, user) => {
     const { data: game, error: gameError } = await supabase
       .from('games')
       .select('id, name')
-      .eq('discord_message_id', reaction.message.id)
+      .eq('discord_message_id', message.id)
       .single()
 
     if (gameError || !game) {
-      console.log(`ℹ️  No game found for message ${reaction.message.id}`)
+      console.log(`ℹ️  No game found for message ${message.id}`)
       return
     }
 
@@ -298,7 +312,7 @@ client.on('messageReactionRemove', async (reaction, user) => {
       console.log(`🗑️  ${dbUser.server_nickname || dbUser.username} removed from "${game.name}"`)
 
       // Update the signup message to remove the user
-      await updateSignupMessage(reaction.message)
+      await updateSignupMessage(message)
     }
   } catch (error) {
     console.error('❌ Error handling reaction removal:', error)
