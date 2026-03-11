@@ -243,7 +243,7 @@ export function SquadAssignment({ gameId, squads, signups, game, isCompleted = f
         <div className="flex gap-3">
           <Button
             onClick={handlePostLineup}
-            disabled={isSaving || isSendingNotifications || isPostingLineup || assignedCount === 0}
+            disabled={isCompleted || isSaving || isSendingNotifications || isPostingLineup || assignedCount === 0}
             variant="outline"
           >
             {isPostingLineup ? 'Posting...' : 'Post Lineup to Discord'}
@@ -257,13 +257,6 @@ export function SquadAssignment({ gameId, squads, signups, game, isCompleted = f
           </Button>
           <Button onClick={handleSave} disabled={isCompleted || isSaving || isSendingNotifications || isPostingLineup}>
             {isSaving ? 'Saving...' : 'Save Assignments'}
-          </Button>
-          <Button
-            onClick={handlePostLineup}
-            disabled={isCompleted || isPostingLineup || isSaving || isSendingNotifications || assignedCount === 0}
-            variant="secondary"
-          >
-            {isPostingLineup ? 'Posting...' : 'Post Lineup'}
           </Button>
         </div>
       </div>
