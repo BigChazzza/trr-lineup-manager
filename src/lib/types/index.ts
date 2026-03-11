@@ -212,6 +212,29 @@ export interface Database {
           created_at?: string
         }
       }
+      role_tasks: {
+        Row: {
+          id: string
+          role_id: string
+          task_description: string
+          task_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          role_id: string
+          task_description: string
+          task_order: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          role_id?: string
+          task_description?: string
+          task_order?: number
+          created_at?: string
+        }
+      }
       game_assignments: {
         Row: {
           id: string

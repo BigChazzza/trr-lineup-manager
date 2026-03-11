@@ -1,9 +1,16 @@
 import { z } from 'zod'
 
+// Schema for role task within a role
+export const roleTaskSchema = z.object({
+  task_description: z.string().min(1, 'Task description is required').max(500),
+  task_order: z.number().int().min(0),
+})
+
 // Schema for squad role within a squad
 export const squadRoleSchema = z.object({
   role_name: z.string().min(1, 'Role name is required').max(100),
   role_order: z.number().int().min(0),
+  role_tasks: z.array(roleTaskSchema).optional().default([]),
 })
 
 // Schema for squad task within a squad
@@ -33,3 +40,4 @@ export type PlaybookFormData = z.infer<typeof playbookSchema>
 export type SquadFormData = z.infer<typeof squadSchema>
 export type SquadRoleFormData = z.infer<typeof squadRoleSchema>
 export type SquadTaskFormData = z.infer<typeof squadTaskSchema>
+export type RoleTaskFormData = z.infer<typeof roleTaskSchema>

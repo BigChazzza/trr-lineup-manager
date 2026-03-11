@@ -96,15 +96,19 @@ export async function createPlaybook(formData: PlaybookFormData) {
       }
     }
 
-    // Insert roles if any
+    // Insert roles and get their IDs back
+    let createdRoles: Array<{ id: string }> = []
     if (roleInserts.length > 0) {
-      const { error: rolesError } = await supabase
+      const { data: roles, error: rolesError } = await supabase
         .from('squad_roles')
         .insert(roleInserts)
+        .select('id')
 
       if (rolesError) {
         console.error('Error creating squad roles:', rolesError)
         // Continue despite role errors, playbook is already created
+      } else {
+        createdRoles = roles || []
       }
     }
 
@@ -117,6 +121,42 @@ export async function createPlaybook(formData: PlaybookFormData) {
       if (tasksError) {
         console.error('Error creating squad tasks:', tasksError)
         // Continue despite task errors, playbook is already created
+      }
+    }
+
+    // Step 4: Create role-specific tasks
+    const roleTaskInserts = []
+    let roleIndex = 0
+    for (let i = 0; i < validatedData.squads.length; i++) {
+      const squad = validatedData.squads[i]
+
+      for (let j = 0; j < squad.roles.length; j++) {
+        const role = squad.roles[j]
+        const createdRole = createdRoles[roleIndex]
+        roleIndex++
+
+        if (createdRole && role.role_tasks && role.role_tasks.length > 0) {
+          for (let k = 0; k < role.role_tasks.length; k++) {
+            const roleTask = role.role_tasks[k]
+            roleTaskInserts.push({
+              role_id: createdRole.id,
+              task_description: roleTask.task_description,
+              task_order: roleTask.task_order ?? k,
+            })
+          }
+        }
+      }
+    }
+
+    // Insert role tasks if any
+    if (roleTaskInserts.length > 0) {
+      const { error: roleTasksError } = await supabase
+        .from('role_tasks')
+        .insert(roleTaskInserts)
+
+      if (roleTasksError) {
+        console.error('Error creating role tasks:', roleTasksError)
+        // Continue despite role task errors
       }
     }
 
@@ -220,15 +260,19 @@ export async function updatePlaybook(playbookId: string, formData: PlaybookFormD
       }
     }
 
-    // Insert roles if any
+    // Insert roles and get their IDs back
+    let createdRoles: Array<{ id: string }> = []
     if (roleInserts.length > 0) {
-      const { error: rolesError } = await supabase
+      const { data: roles, error: rolesError } = await supabase
         .from('squad_roles')
         .insert(roleInserts)
+        .select('id')
 
       if (rolesError) {
         console.error('Error creating squad roles:', rolesError)
         // Continue despite role errors
+      } else {
+        createdRoles = roles || []
       }
     }
 
@@ -241,6 +285,42 @@ export async function updatePlaybook(playbookId: string, formData: PlaybookFormD
       if (tasksError) {
         console.error('Error creating squad tasks:', tasksError)
         // Continue despite task errors
+      }
+    }
+
+    // Step 5: Create role-specific tasks
+    const roleTaskInserts = []
+    let roleIndex = 0
+    for (let i = 0; i < validatedData.squads.length; i++) {
+      const squad = validatedData.squads[i]
+
+      for (let j = 0; j < squad.roles.length; j++) {
+        const role = squad.roles[j]
+        const createdRole = createdRoles[roleIndex]
+        roleIndex++
+
+        if (createdRole && role.role_tasks && role.role_tasks.length > 0) {
+          for (let k = 0; k < role.role_tasks.length; k++) {
+            const roleTask = role.role_tasks[k]
+            roleTaskInserts.push({
+              role_id: createdRole.id,
+              task_description: roleTask.task_description,
+              task_order: roleTask.task_order ?? k,
+            })
+          }
+        }
+      }
+    }
+
+    // Insert role tasks if any
+    if (roleTaskInserts.length > 0) {
+      const { error: roleTasksError } = await supabase
+        .from('role_tasks')
+        .insert(roleTaskInserts)
+
+      if (roleTasksError) {
+        console.error('Error creating role tasks:', roleTasksError)
+        // Continue despite role task errors
       }
     }
 

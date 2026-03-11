@@ -34,7 +34,11 @@ export async function sendRoleNotifications(gameId: string) {
             id,
             name,
             squad_tasks(task_description, task_order),
-            squad_roles(id, role_name)
+            squad_roles(
+              id,
+              role_name,
+              role_tasks(task_description, task_order)
+            )
           )
         )
       `)
@@ -128,9 +132,15 @@ export async function sendRoleNotifications(gameId: string) {
         continue
       }
 
-      // Format tasks
-      const tasks = squad.squad_tasks
+      // Format squad tasks
+      const squadTasks = squad.squad_tasks
         .sort((a, b) => a.task_order - b.task_order)
+        .map((t, i) => `${i + 1}. ${t.task_description}`)
+        .join('\n')
+
+      // Format role-specific tasks
+      const roleTasks = role.role_tasks
+        ?.sort((a, b) => a.task_order - b.task_order)
         .map((t, i) => `${i + 1}. ${t.task_description}`)
         .join('\n')
 
@@ -140,6 +150,19 @@ export async function sendRoleNotifications(gameId: string) {
         game.mode && `Mode: ${game.mode}`,
         game.faction && `Faction: ${game.faction}`
       ].filter(Boolean).join(' • ')
+
+      // Build tasks section
+      let tasksSection = ''
+      if (squadTasks) {
+        tasksSection += `**Squad Objectives:**\n${squadTasks}`
+      }
+      if (roleTasks) {
+        if (tasksSection) tasksSection += '\n\n'
+        tasksSection += `**Your Role-Specific Tasks:**\n${roleTasks}`
+      }
+      if (!tasksSection) {
+        tasksSection = 'No specific objectives assigned'
+      }
 
       const message = `
 🎮 **${game.name} - Assignment Notification**
@@ -153,7 +176,7 @@ Squad: **${squad.name}**
 Role: **${role.role_name}**
 
 📋 **Mission Objectives:**
-${tasks || 'No specific objectives assigned'}
+${tasksSection}
 
 Good luck on the battlefield! 🪖
       `.trim()

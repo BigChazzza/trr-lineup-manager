@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Trash2, MoveUp, MoveDown } from 'lucide-react'
+import { Plus, Trash2, MoveUp, MoveDown, ChevronDown, ChevronRight } from 'lucide-react'
 
 interface PlaybookFormProps {
   defaultValues?: Partial<PlaybookFormData>
@@ -44,7 +44,7 @@ export function PlaybookForm({ defaultValues, playbookId }: PlaybookFormProps) {
         {
           name: '',
           squad_order: 0,
-          roles: [{ role_name: '', role_order: 0 }],
+          roles: [{ role_name: '', role_order: 0, role_tasks: [] }],
           tasks: [],
         },
       ],
@@ -69,7 +69,7 @@ export function PlaybookForm({ defaultValues, playbookId }: PlaybookFormProps) {
     setIsSubmitting(true)
 
     try {
-      // Normalize squad_order, role_order, and task_order based on array indices
+      // Normalize squad_order, role_order, task_order, and role_task_order based on array indices
       const normalizedData = {
         ...data,
         squads: data.squads.map((squad, squadIndex) => ({
@@ -78,6 +78,10 @@ export function PlaybookForm({ defaultValues, playbookId }: PlaybookFormProps) {
           roles: squad.roles.map((role, roleIndex) => ({
             ...role,
             role_order: roleIndex,
+            role_tasks: (role.role_tasks || []).map((roleTask, roleTaskIndex) => ({
+              ...roleTask,
+              task_order: roleTaskIndex,
+            })),
           })),
           tasks: squad.tasks.map((task, taskIndex) => ({
             ...task,
@@ -240,7 +244,7 @@ export function PlaybookForm({ defaultValues, playbookId }: PlaybookFormProps) {
                 appendSquad({
                   name: '',
                   squad_order: squadFields.length,
-                  roles: [{ role_name: '', role_order: 0 }],
+                  roles: [{ role_name: '', role_order: 0, role_tasks: [] }],
                   tasks: [],
                 })
               }
@@ -369,7 +373,7 @@ function SquadCard({ squadIndex, form, onRemove, onMoveUp, onMoveDown, isFirst, 
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => appendRole({ role_name: '', role_order: roleFields.length })}
+              onClick={() => appendRole({ role_name: '', role_order: roleFields.length, role_tasks: [] })}
             >
               <Plus className="h-3 w-3 mr-1" />
               Add Role
@@ -377,51 +381,18 @@ function SquadCard({ squadIndex, form, onRemove, onMoveUp, onMoveDown, isFirst, 
           </div>
 
           {roleFields.map((roleField, roleIndex) => (
-            <div key={roleField.id} className="flex items-center gap-2">
-              <div className="flex-1">
-                <FormField
-                  control={form.control}
-                  name={`squads.${squadIndex}.roles.${roleIndex}.role_name`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="e.g., Squad Leader, Medic" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => roleIndex > 0 && moveRole(roleIndex, roleIndex - 1)}
-                  disabled={roleIndex === 0}
-                >
-                  <MoveUp className="h-3 w-3" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => roleIndex < roleFields.length - 1 && moveRole(roleIndex, roleIndex + 1)}
-                  disabled={roleIndex === roleFields.length - 1}
-                >
-                  <MoveDown className="h-3 w-3" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeRole(roleIndex)}
-                  disabled={roleFields.length === 1}
-                >
-                  <Trash2 className="h-3 w-3 text-red-500" />
-                </Button>
-              </div>
-            </div>
+            <RoleCard
+              key={roleField.id}
+              squadIndex={squadIndex}
+              roleIndex={roleIndex}
+              form={form}
+              onRemove={() => removeRole(roleIndex)}
+              onMoveUp={() => roleIndex > 0 && moveRole(roleIndex, roleIndex - 1)}
+              onMoveDown={() => roleIndex < roleFields.length - 1 && moveRole(roleIndex, roleIndex + 1)}
+              isFirst={roleIndex === 0}
+              isLast={roleIndex === roleFields.length - 1}
+              canRemove={roleFields.length > 1}
+            />
           ))}
         </div>
 
@@ -497,5 +468,155 @@ function SquadCard({ squadIndex, form, onRemove, onMoveUp, onMoveDown, isFirst, 
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+interface RoleCardProps {
+  squadIndex: number
+  roleIndex: number
+  form: UseFormReturn<PlaybookFormData>
+  onRemove: () => void
+  onMoveUp: () => void
+  onMoveDown: () => void
+  isFirst: boolean
+  isLast: boolean
+  canRemove: boolean
+}
+
+function RoleCard({ squadIndex, roleIndex, form, onRemove, onMoveUp, onMoveDown, isFirst, isLast, canRemove }: RoleCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const { fields: roleTaskFields, append: appendRoleTask, remove: removeRoleTask, move: moveRoleTask } = useFieldArray({
+    control: form.control,
+    name: `squads.${squadIndex}.roles.${roleIndex}.role_tasks`,
+  })
+
+  return (
+    <div className="border rounded-lg p-3 space-y-2">
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="h-6 w-6 p-0"
+        >
+          {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+        </Button>
+        <div className="flex-1">
+          <FormField
+            control={form.control}
+            name={`squads.${squadIndex}.roles.${roleIndex}.role_name`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder="e.g., Squad Leader, Medic" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onMoveUp}
+            disabled={isFirst}
+          >
+            <MoveUp className="h-3 w-3" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onMoveDown}
+            disabled={isLast}
+          >
+            <MoveDown className="h-3 w-3" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onRemove}
+            disabled={!canRemove}
+          >
+            <Trash2 className="h-3 w-3 text-red-500" />
+          </Button>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="ml-9 space-y-2 pt-2 border-t">
+          <div className="flex items-center justify-between">
+            <h5 className="text-sm font-medium">Role-Specific Tasks</h5>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => appendRoleTask({ task_description: '', task_order: roleTaskFields.length })}
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Add Task
+            </Button>
+          </div>
+
+          {roleTaskFields.length > 0 ? (
+            <div className="space-y-2">
+              {roleTaskFields.map((roleTaskField, roleTaskIndex) => (
+                <div key={roleTaskField.id} className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <FormField
+                      control={form.control}
+                      name={`squads.${squadIndex}.roles.${roleIndex}.role_tasks.${roleTaskIndex}.task_description`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input placeholder="e.g., Coordinate squad movements" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => roleTaskIndex > 0 && moveRoleTask(roleTaskIndex, roleTaskIndex - 1)}
+                      disabled={roleTaskIndex === 0}
+                    >
+                      <MoveUp className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => roleTaskIndex < roleTaskFields.length - 1 && moveRoleTask(roleTaskIndex, roleTaskIndex + 1)}
+                      disabled={roleTaskIndex === roleTaskFields.length - 1}
+                    >
+                      <MoveDown className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeRoleTask(roleTaskIndex)}
+                    >
+                      <Trash2 className="h-3 w-3 text-red-500" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">No role-specific tasks added yet</p>
+          )}
+        </div>
+      )}
+    </div>
   )
 }

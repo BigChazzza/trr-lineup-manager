@@ -32,7 +32,12 @@ export default async function PlaybookDetailPage({
         id,
         name,
         squad_order,
-        squad_roles(id, role_name, role_order),
+        squad_roles(
+          id,
+          role_name,
+          role_order,
+          role_tasks(id, task_description, task_order)
+        ),
         squad_tasks(id, task_description, task_order)
       )
     `)
@@ -121,13 +126,29 @@ export default async function PlaybookDetailPage({
               <CardContent>
                 <div>
                   <p className="font-semibold text-xs mb-3">Roles:</p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="space-y-3">
                     {squad.squad_roles
                       .sort((a: { role_order: number }, b: { role_order: number }) => a.role_order - b.role_order)
-                      .map((role: { id: string; role_name: string }) => (
-                        <Badge key={role.id} variant="secondary">
-                          {role.role_name}
-                        </Badge>
+                      .map((role: { id: string; role_name: string; role_tasks: Array<{ id: string; task_description: string; task_order: number }> }) => (
+                        <div key={role.id} className="border rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="secondary">{role.role_name}</Badge>
+                          </div>
+                          {role.role_tasks && role.role_tasks.length > 0 && (
+                            <div className="ml-2 mt-2">
+                              <p className="text-xs font-medium text-muted-foreground mb-1">Role-Specific Tasks:</p>
+                              <ul className="list-disc list-inside space-y-1">
+                                {role.role_tasks
+                                  .sort((a: { task_order: number }, b: { task_order: number }) => a.task_order - b.task_order)
+                                  .map((task: { id: string; task_description: string }) => (
+                                    <li key={task.id} className="text-sm text-muted-foreground">
+                                      {task.task_description}
+                                    </li>
+                                  ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
                       ))}
                   </div>
                 </div>

@@ -29,7 +29,12 @@ export default async function EditPlaybookPage({
         id,
         name,
         squad_order,
-        squad_roles(id, role_name, role_order),
+        squad_roles(
+          id,
+          role_name,
+          role_order,
+          role_tasks(id, task_description, task_order)
+        ),
         squad_tasks(id, task_description, task_order)
       )
     `)
@@ -48,14 +53,29 @@ export default async function EditPlaybookPage({
     google_doc_link: playbook.google_doc_link || '',
     squads: playbook.squads
       .sort((a: { squad_order: number }, b: { squad_order: number }) => a.squad_order - b.squad_order)
-      .map((squad: { name: string; squad_order: number; squad_roles: Array<{ role_name: string; role_order: number }>; squad_tasks: Array<{ task_description: string; task_order: number }> }) => ({
+      .map((squad: {
+        name: string;
+        squad_order: number;
+        squad_roles: Array<{
+          role_name: string;
+          role_order: number;
+          role_tasks: Array<{ task_description: string; task_order: number }>
+        }>;
+        squad_tasks: Array<{ task_description: string; task_order: number }>
+      }) => ({
         name: squad.name,
         squad_order: squad.squad_order,
         roles: squad.squad_roles
           .sort((a: { role_order: number }, b: { role_order: number }) => a.role_order - b.role_order)
-          .map((role: { role_name: string; role_order: number }) => ({
+          .map((role: { role_name: string; role_order: number; role_tasks: Array<{ task_description: string; task_order: number }> }) => ({
             role_name: role.role_name,
             role_order: role.role_order,
+            role_tasks: (role.role_tasks || [])
+              .sort((a: { task_order: number }, b: { task_order: number }) => a.task_order - b.task_order)
+              .map((roleTask: { task_description: string; task_order: number }) => ({
+                task_description: roleTask.task_description,
+                task_order: roleTask.task_order,
+              })),
           })),
         tasks: squad.squad_tasks
           .sort((a: { task_order: number }, b: { task_order: number }) => a.task_order - b.task_order)
