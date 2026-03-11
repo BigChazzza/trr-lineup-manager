@@ -151,8 +151,11 @@ export function PlaybookForm({ defaultValues, playbookId, affectedGames = [] }: 
                   ))}
                 </ul>
                 <p className="text-yellow-800 mt-3 font-medium">
-                  ⚠️ Note: Changing squads or roles will break existing player assignments for these games.
-                  Consider creating a new playbook instead of editing this one.
+                  ⚠️ Note: If any of these games have player assignments, you will NOT be able to save changes to squads or roles.
+                  You must either complete/close the games first, or create a new playbook.
+                </p>
+                <p className="text-sm text-yellow-700 mt-2">
+                  <strong>Tip:</strong> You can still safely edit the playbook name, description, and Google doc link without affecting assignments.
                 </p>
               </div>
             </CardContent>

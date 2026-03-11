@@ -185,6 +185,28 @@ export async function updatePlaybook(playbookId: string, formData: PlaybookFormD
     // Validate input
     const validatedData = playbookSchema.parse(formData)
 
+    // Check for active games with assignments using this playbook
+    const { data: gamesWithAssignments } = await supabase
+      .from('games')
+      .select(`
+        id,
+        name,
+        game_assignments(id)
+      `)
+      .eq('playbook_id', playbookId)
+      .in('status', ['draft', 'open'])
+
+    const hasActiveAssignments = gamesWithAssignments?.some(
+      game => game.game_assignments && game.game_assignments.length > 0
+    )
+
+    if (hasActiveAssignments) {
+      return {
+        success: false,
+        error: 'Cannot edit playbook: Active games have player assignments. Please complete or close these games first, or create a new playbook.'
+      }
+    }
+
     // Step 1: Update playbook basic info
     const { data: playbook, error: playbookError } = await supabase
       .from('playbooks')
