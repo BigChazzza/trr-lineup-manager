@@ -10,7 +10,7 @@ export const roleTaskSchema = z.object({
 export const squadRoleSchema = z.object({
   role_name: z.string().min(1, 'Role name is required').max(100),
   role_order: z.number().int().min(0),
-  role_tasks: z.array(roleTaskSchema).optional().default([]),
+  role_tasks: z.array(roleTaskSchema).default([]),
 })
 
 // Schema for squad task within a squad
