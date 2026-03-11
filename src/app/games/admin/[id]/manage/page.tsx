@@ -26,6 +26,9 @@ export default async function ManageGamePage({
     notFound()
   }
 
+  // Prevent editing completed games
+  const isCompleted = game.status === 'completed'
+
   const sortedSquads = game.playbook?.squads
     ? [...game.playbook.squads]
         .sort((a, b) => a.squad_order - b.squad_order)
@@ -49,9 +52,20 @@ export default async function ManageGamePage({
             <CardTitle>Manage Lineup - {game.name}</CardTitle>
             <CardDescription>
               {game.date} at {game.time} • {game.signups.length} player(s) signed up
+              {isCompleted && <span className="ml-2 text-yellow-600 font-semibold">• Game Completed</span>}
             </CardDescription>
           </CardHeader>
         </Card>
+
+        {isCompleted && (
+          <Card className="mb-6 border-yellow-400 bg-yellow-50">
+            <CardContent className="py-4">
+              <p className="text-sm text-yellow-800">
+                <strong>Note:</strong> This game has been completed. Lineup editing is disabled.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {game.playbook && sortedSquads.length > 0 ? (
           <SquadAssignment
@@ -66,6 +80,7 @@ export default async function ManageGamePage({
               mode: game.mode,
               faction: game.faction
             }}
+            isCompleted={isCompleted}
           />
         ) : (
           <Card>

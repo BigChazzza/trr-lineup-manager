@@ -79,6 +79,20 @@ export default async function GamesPage() {
                             <span className="font-medium">Playbook:</span> {game.playbook.name}
                           </p>
                         )}
+                        {game.strat_maps_link && (
+                          <div className="mt-3">
+                            <a
+                              href={game.strat_maps_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Button variant="outline" size="sm" className="w-full">
+                                View Strategy Map
+                              </Button>
+                            </a>
+                          </div>
+                        )}
                         <p className="text-muted-foreground text-xs mt-4">
                           Created by {game.created_by_user?.server_nickname || game.created_by_user?.username || 'Unknown'}
                         </p>

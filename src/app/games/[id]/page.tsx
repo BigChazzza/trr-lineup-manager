@@ -133,6 +133,19 @@ export default async function GameDetailPage({
                     {game.playbook.description && (
                       <p className="text-sm text-muted-foreground mt-1">{game.playbook.description}</p>
                     )}
+                    {game.playbook.google_doc_link && (
+                      <div className="mt-2">
+                        <a
+                          href={game.playbook.google_doc_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button variant="outline" size="sm">
+                            View Playbook Guide
+                          </Button>
+                        </a>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -252,25 +265,28 @@ export default async function GameDetailPage({
               <CardContent>
                 {game.signups.length > 0 ? (
                   <div className="space-y-3">
-                    {game.signups.map((signup: { id: string; user: { username: string; avatar_url: string | null }; signed_up_at: string }) => (
-                      <div key={signup.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                        <Avatar className="h-10 w-10 ring-1 ring-gray-300">
-                          <AvatarImage
-                            src={signup.user.avatar_url || undefined}
-                            alt={signup.user.username}
-                          />
-                          <AvatarFallback className="bg-gray-100 text-foreground">
-                            {signup.user.username.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{signup.user.username}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(signup.signed_up_at), 'MMM d, h:mm a')}
-                          </p>
+                    {game.signups.map((signup: { id: string; user: { username: string; server_nickname?: string | null; avatar_url: string | null }; signed_up_at: string }) => {
+                      const displayName = signup.user.server_nickname || signup.user.username
+                      return (
+                        <div key={signup.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                          <Avatar className="h-10 w-10 ring-1 ring-gray-300">
+                            <AvatarImage
+                              src={signup.user.avatar_url || undefined}
+                              alt={displayName}
+                            />
+                            <AvatarFallback className="bg-gray-100 text-foreground">
+                              {displayName.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{displayName}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(signup.signed_up_at), 'MMM d, h:mm a')}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">
@@ -290,13 +306,13 @@ export default async function GameDetailPage({
                     <Avatar className="ring-1 ring-gray-300">
                       <AvatarImage
                         src={game.created_by_user.avatar_url || undefined}
-                        alt={game.created_by_user.username}
+                        alt={game.created_by_user.server_nickname || game.created_by_user.username}
                       />
                       <AvatarFallback className="bg-gray-100 text-foreground">
-                        {game.created_by_user.username.slice(0, 2).toUpperCase()}
+                        {(game.created_by_user.server_nickname || game.created_by_user.username).slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <p className="font-medium">{game.created_by_user.username}</p>
+                    <p className="font-medium">{game.created_by_user.server_nickname || game.created_by_user.username}</p>
                   </div>
                 </CardContent>
               </Card>

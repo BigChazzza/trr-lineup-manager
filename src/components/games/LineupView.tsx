@@ -24,6 +24,7 @@ interface Signup {
   user: {
     id: string
     username: string
+    server_nickname?: string | null
     avatar_url: string | null
   }
   assignment?: Array<{
@@ -126,16 +127,23 @@ export function LineupView({ squads, signups, currentUserId }: LineupViewProps) 
                             <div className="font-medium text-sm min-w-[150px]">{role.role_name}</div>
                             {assignment ? (
                               <div className="flex items-center gap-2">
-                                <Avatar className="h-8 w-8 ring-1 ring-gray-300">
-                                  <AvatarImage
-                                    src={assignment.user.avatar_url || undefined}
-                                    alt={assignment.user.username}
-                                  />
-                                  <AvatarFallback className="bg-gray-100 text-foreground">
-                                    {assignment.user.username.slice(0, 2).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span className="text-sm">{assignment.user.username}</span>
+                                {(() => {
+                                  const displayName = assignment.user.server_nickname || assignment.user.username
+                                  return (
+                                    <>
+                                      <Avatar className="h-8 w-8 ring-1 ring-gray-300">
+                                        <AvatarImage
+                                          src={assignment.user.avatar_url || undefined}
+                                          alt={displayName}
+                                        />
+                                        <AvatarFallback className="bg-gray-100 text-foreground">
+                                          {displayName.slice(0, 2).toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <span className="text-sm">{displayName}</span>
+                                    </>
+                                  )
+                                })()}
                               </div>
                             ) : (
                               <span className="text-sm text-muted-foreground italic">Unassigned</span>

@@ -80,9 +80,10 @@ interface SquadAssignmentProps {
   squads: Squad[]
   signups: Signup[]
   game: GameDetails
+  isCompleted?: boolean
 }
 
-export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignmentProps) {
+export function SquadAssignment({ gameId, squads, signups, game, isCompleted = false }: SquadAssignmentProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [assignments, setAssignments] = useState<Record<string, { squadId: string; roleId: string }>>(() => {
@@ -108,6 +109,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
   const [sendResults, setSendResults] = useState<SendResults | null>(null)
 
   const handleAssign = (signupId: string, squadId: string, roleId: string) => {
+    if (isCompleted) return // Prevent changes for completed games
     setAssignments(prev => ({
       ...prev,
       [signupId]: { squadId, roleId }
@@ -115,6 +117,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
   }
 
   const handleSave = async () => {
+    if (isCompleted) return // Prevent saves for completed games
     setIsSaving(true)
     try {
       const result = await saveGameAssignments(gameId, assignments)
@@ -247,13 +250,20 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
           </Button>
           <Button
             onClick={() => setShowConfirmDialog(true)}
-            disabled={isSaving || isSendingNotifications || isPostingLineup || assignedCount === 0}
+            disabled={isCompleted || isSaving || isSendingNotifications || isPostingLineup || assignedCount === 0}
             variant="outline"
           >
             {isSendingNotifications ? 'Sending...' : 'Send Roles to Discord'}
           </Button>
-          <Button onClick={handleSave} disabled={isSaving || isSendingNotifications || isPostingLineup}>
+          <Button onClick={handleSave} disabled={isCompleted || isSaving || isSendingNotifications || isPostingLineup}>
             {isSaving ? 'Saving...' : 'Save Assignments'}
+          </Button>
+          <Button
+            onClick={handlePostLineup}
+            disabled={isCompleted || isPostingLineup || isSaving || isSendingNotifications || assignedCount === 0}
+            variant="secondary"
+          >
+            {isPostingLineup ? 'Posting...' : 'Post Lineup'}
           </Button>
         </div>
       </div>
@@ -322,6 +332,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
                             handleAssign(signup.id, squadId, squad.squad_roles[0].id)
                           }
                         }}
+                        disabled={isCompleted}
                       >
                         <SelectTrigger className="flex-1">
                           <SelectValue placeholder="Select squad" />
@@ -343,6 +354,7 @@ export function SquadAssignment({ gameId, squads, signups, game }: SquadAssignme
                               handleAssign(signup.id, assignment.squadId, roleId)
                             }
                           }}
+                          disabled={isCompleted}
                         >
                           <SelectTrigger className="flex-1">
                             <SelectValue placeholder="Select role" />
