@@ -23,12 +23,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast'
 import { Plus, Trash2, MoveUp, MoveDown, ChevronDown, ChevronRight } from 'lucide-react'
 
+interface AffectedGame {
+  id: string
+  name: string
+  status: string
+  date: string
+}
+
 interface PlaybookFormProps {
   defaultValues?: Partial<PlaybookFormData>
   playbookId?: string
+  affectedGames?: AffectedGame[]
 }
 
-export function PlaybookForm({ defaultValues, playbookId }: PlaybookFormProps) {
+export function PlaybookForm({ defaultValues, playbookId, affectedGames = [] }: PlaybookFormProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -122,6 +130,35 @@ export function PlaybookForm({ defaultValues, playbookId }: PlaybookFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Warning for affected games */}
+        {playbookId && affectedGames && affectedGames.length > 0 && (
+          <Card className="border-yellow-400 bg-yellow-50">
+            <CardHeader>
+              <CardTitle className="text-yellow-800">⚠️ Warning: Active Games Using This Playbook</CardTitle>
+              <CardDescription className="text-yellow-700">
+                This playbook is currently being used by {affectedGames.length} game(s) with open signups or in draft status.
+                Editing squad structure or roles may affect existing player assignments.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm space-y-2">
+                <p className="font-semibold text-yellow-800">Affected games:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  {affectedGames.map((game) => (
+                    <li key={game.id} className="text-yellow-700">
+                      {game.name} ({game.status}) - {new Date(game.date).toLocaleDateString()}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-yellow-800 mt-3 font-medium">
+                  ⚠️ Note: Changing squads or roles will break existing player assignments for these games.
+                  Consider creating a new playbook instead of editing this one.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Template Selection - only show when creating new playbook */}
         {!playbookId && (
           <Card>

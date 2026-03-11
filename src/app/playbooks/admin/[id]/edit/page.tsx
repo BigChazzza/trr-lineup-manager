@@ -45,6 +45,14 @@ export default async function EditPlaybookPage({
     notFound()
   }
 
+  // Check for games using this playbook
+  const { data: affectedGames } = await supabase
+    .from('games')
+    .select('id, name, status, date')
+    .eq('playbook_id', id)
+    .in('status', ['draft', 'open'])
+    .order('date', { ascending: true })
+
   // Transform database structure to form structure
   const defaultValues: PlaybookFormData = {
     name: playbook.name,
@@ -95,7 +103,11 @@ export default async function EditPlaybookPage({
             Update squads, roles, and tasks for {playbook.name}
           </p>
         </div>
-        <PlaybookForm defaultValues={defaultValues} playbookId={id} />
+        <PlaybookForm
+          defaultValues={defaultValues}
+          playbookId={id}
+          affectedGames={affectedGames || []}
+        />
       </div>
     </div>
   )

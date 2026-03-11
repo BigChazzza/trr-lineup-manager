@@ -9,7 +9,7 @@
 -- Replace 'YOUR_DISCORD_ID' with your actual Discord ID from step 1
 UPDATE public.users
 SET discord_roles = '["Admin"]'::jsonb
-WHERE discord_id = 'YOUR_DISCORD_ID';
+WHERE discord_id = '691188874193403974';
 
 -- Step 3: Verify the change
 SELECT
@@ -19,7 +19,7 @@ SELECT
   discord_roles,
   discord_roles::jsonb ? 'Admin' as has_admin_role
 FROM public.users
-WHERE discord_id = 'YOUR_DISCORD_ID';
+WHERE discord_id = '691188874193403974';
 
 -- IMPORTANT: After running this:
 -- 1. Log out of the application
